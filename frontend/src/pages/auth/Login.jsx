@@ -3,6 +3,12 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginUser } from '../../redux/slices/authSlice';
 
+const getDashboardPath = (role) => {
+  if (role === 'ADMIN') return '/admin';
+  if (role === 'WORKER') return '/worker';
+  return '/';
+};
+
 export const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -13,7 +19,7 @@ export const Login = () => {
   const onSubmit = async (values) => {
     const result = await dispatch(loginUser(values));
     if (loginUser.fulfilled.match(result)) {
-      navigate(location.state?.from?.pathname || '/', { replace: true });
+      navigate(location.state?.from?.pathname || getDashboardPath(result.payload.user.role), { replace: true });
     }
   };
 
