@@ -1,0 +1,16 @@
+{
+  "name": "healthiffy",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev:backend": "npm run dev --workspace backend",
+    "dev:frontend": "npm run dev --workspace frontend",
+    "build:frontend": "npm run build --workspace frontend",
+    "test:backend": "npm test --workspace backend",
+    "seed:admin": "npm run seed:admin --workspace backend"
+  },
+  "workspaces": [
+    "backend",
+    "frontend"
+  ]
+}
