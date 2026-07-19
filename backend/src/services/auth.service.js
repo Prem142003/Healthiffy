@@ -28,11 +28,15 @@ const sendVerificationEmail = async (user) => {
   await user.save({ validateBeforeSave: false });
 
   const verificationUrl = `${env.clientUrl}/verify-email?token=${rawToken}&email=${encodeURIComponent(user.email)}`;
-  await sendEmail({
-    to: user.email,
-    subject: 'Verify your Healthiffy account',
-    text: `Verify your account using this link: ${verificationUrl}`
-  });
+  try {
+    await sendEmail({
+      to: user.email,
+      subject: 'Verify your Healthiffy account',
+      text: `Verify your account using this link: ${verificationUrl}`
+    });
+  } catch (error) {
+    console.error('Verification email failed:', error.message);
+  }
 };
 
 export const registerCustomer = async (payload) => {
@@ -141,11 +145,16 @@ export const requestPasswordReset = async (email) => {
   await user.save({ validateBeforeSave: false });
 
   const resetUrl = `${env.clientUrl}/reset-password?token=${rawToken}&email=${encodeURIComponent(user.email)}`;
-  await sendEmail({
-    to: user.email,
-    subject: 'Reset your Healthiffy password',
-    text: `Reset your password using this link: ${resetUrl}`
-  });
+  try {
+    await sendEmail({
+      to: user.email,
+      subject: 'Reset your Healthiffy password',
+      text: `Reset your password using this link: ${resetUrl}`
+    });
+  } catch (error) {
+    console.error('Password reset email failed:', error.message);
+    throw error;
+  }
 };
 
 export const resetPassword = async ({ email, token, password }) => {
