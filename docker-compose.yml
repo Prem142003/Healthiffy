@@ -1,0 +1,39 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: healthiffy-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: healthiffy-backend
+    restart: unless-stopped
+    env_file:
+      - backend/.env.docker
+    depends_on:
+      - mongo
+    ports:
+      - "5000:5000"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        VITE_API_BASE_URL: http://localhost:5000/api/v1
+        VITE_SOCKET_URL: http://localhost:5000
+    container_name: healthiffy-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+
+volumes:
+  mongo-data:

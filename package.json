@@ -7,7 +7,10 @@
     "dev:frontend": "npm run dev --workspace frontend",
     "build:frontend": "npm run build --workspace frontend",
     "test:backend": "npm test --workspace backend",
-    "seed:admin": "npm run seed:admin --workspace backend"
+    "seed:admin": "npm run seed:admin --workspace backend",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down",
+    "docker:seed": "docker compose run --rm backend npm run seed:admin"
   },
   "workspaces": [
     "backend",

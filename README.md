@@ -54,6 +54,50 @@ npm run dev:backend
 npm run dev:frontend
 ```
 
+## Docker
+
+Create the Docker env file:
+
+```bash
+cp backend/.env.docker.example backend/.env.docker
+```
+
+Start MongoDB, backend, and frontend:
+
+```bash
+npm run docker:up
+```
+
+Open:
+
+```txt
+http://localhost:3000
+```
+
+Backend health:
+
+```txt
+http://localhost:5000/api/v1/health
+```
+
+Seed an admin inside Docker:
+
+```bash
+npm run docker:seed
+```
+
+Stop containers:
+
+```bash
+npm run docker:down
+```
+
+Docker services:
+
+- `mongo` on port `27017`
+- `backend` on port `5000`
+- `frontend` on port `3000`
+
 Seed the first admin:
 
 ```bash
