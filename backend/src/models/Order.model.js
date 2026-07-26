@@ -109,11 +109,17 @@ const orderSchema = new mongoose.Schema(
       index: true
     },
     statusHistory: [statusHistorySchema],
+    lastStatusUpdatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    lastStatusUpdatedAt: Date,
     placedAt: {
       type: Date,
       default: Date.now
     },
     preparedAt: Date,
+    deliveredAt: Date,
     servedAt: Date,
     cancelledAt: Date
   },

@@ -4,7 +4,8 @@ import { useSelector } from 'react-redux';
 import { orderApi } from '../../services/orderApi';
 import { getSocket } from '../../services/socket';
 
-const steps = ['PENDING', 'PREPARING', 'READY', 'SERVED'];
+const steps = ['PENDING', 'PREPARING', 'READY', 'DELIVERED'];
+const normalizeStatus = (status) => (status === 'SERVED' ? 'DELIVERED' : status);
 
 export const OrderTracking = () => {
   const { orderId } = useParams();
@@ -38,7 +39,7 @@ export const OrderTracking = () => {
     return () => socket.off('order:status-updated', handleOrderUpdated);
   }, [orderId, user?._id]);
 
-  const currentIndex = useMemo(() => Math.max(steps.indexOf(order?.orderStatus), 0), [order?.orderStatus]);
+  const currentIndex = useMemo(() => Math.max(steps.indexOf(normalizeStatus(order?.orderStatus)), 0), [order?.orderStatus]);
 
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-8">
@@ -55,7 +56,7 @@ export const OrderTracking = () => {
           <>
             <div className="mb-6 flex flex-wrap gap-2">
               <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">{order.paymentStatus}</span>
-              <span className="rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700">{order.orderStatus}</span>
+              <span className="rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700">{normalizeStatus(order.orderStatus)}</span>
             </div>
             <div className="space-y-4">
               {steps.map((step, index) => (

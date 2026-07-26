@@ -5,8 +5,7 @@ import {
   createOrderHandler,
   getOrderHandler,
   listAdminOrders,
-  listMyOrders,
-  updateOrderStatusHandler
+  listMyOrders
 } from '../controllers/order.controller.js';
 import { authenticate } from '../middlewares/auth.middleware.js';
 import { authorizeRoles } from '../middlewares/role.middleware.js';
@@ -18,8 +17,7 @@ router.use(authenticate);
 router.post('/', authorizeRoles(ROLES.CUSTOMER, ROLES.ADMIN), createOrderHandler);
 router.get('/my-orders', authorizeRoles(ROLES.CUSTOMER, ROLES.ADMIN), listMyOrders);
 router.get('/admin/all', authorizeRoles(ROLES.ADMIN), listAdminOrders);
-router.patch('/:id/status', authorizeRoles(ROLES.ADMIN), updateOrderStatusHandler);
-router.patch('/:id/cancel', authorizeRoles(ROLES.CUSTOMER, ROLES.ADMIN), cancelMyOrderHandler);
+router.patch('/:id/cancel', authorizeRoles(ROLES.CUSTOMER), cancelMyOrderHandler);
 router.get('/:id', getOrderHandler);
 
 export default router;

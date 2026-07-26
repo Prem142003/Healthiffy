@@ -85,9 +85,12 @@ export const createOrder = async (payload, customerId) => {
       {
         status: ORDER_STATUS.PENDING,
         changedBy: customerId,
+        changedAt: new Date(),
         note: 'Order placed'
       }
-    ]
+    ],
+    lastStatusUpdatedBy: customerId,
+    lastStatusUpdatedAt: new Date()
   });
 
   return getOrderById(order._id, { requesterId: customerId, isAdmin: false });
@@ -158,10 +161,14 @@ export const updateOrderStatus = async ({ orderId, status, note, userId }) => {
     throw new AppError(`Order cannot move from ${order.orderStatus} to ${status}`, 400);
   }
 
+  const changedAt = new Date();
   order.orderStatus = status;
-  order.statusHistory.push({ status, changedBy: userId, note });
+  order.lastStatusUpdatedBy = userId;
+  order.lastStatusUpdatedAt = changedAt;
+  order.statusHistory.push({ status, changedBy: userId, changedAt, note });
 
   if (status === ORDER_STATUS.PREPARING) order.preparedAt = new Date();
+  if (status === ORDER_STATUS.DELIVERED) order.deliveredAt = new Date();
   if (status === ORDER_STATUS.SERVED) order.servedAt = new Date();
   if (status === ORDER_STATUS.CANCELLED) order.cancelledAt = new Date();
 
@@ -219,17 +226,22 @@ export const updateWorkerOrderStatus = async ({ orderId, status, note, worker })
   if (order.paymentStatus !== PAYMENT_STATUS.PAID) {
     throw new AppError('Workers can only prepare paid orders', 400);
   }
-  if (![ORDER_STATUS.PREPARING, ORDER_STATUS.READY, ORDER_STATUS.SERVED].includes(status)) {
-    throw new AppError('Worker status must be PREPARING, READY, or SERVED', 400);
+  if (![ORDER_STATUS.PREPARING, ORDER_STATUS.READY, ORDER_STATUS.DELIVERED, ORDER_STATUS.CANCELLED].includes(status)) {
+    throw new AppError('Worker status must be PREPARING, READY, DELIVERED, or CANCELLED', 400);
   }
   if (!ORDER_STATUS_FLOW[order.orderStatus].includes(status)) {
     throw new AppError(`Order cannot move from ${order.orderStatus} to ${status}`, 400);
   }
 
+  const changedAt = new Date();
   order.orderStatus = status;
-  order.statusHistory.push({ status, changedBy: worker._id, note });
+  order.lastStatusUpdatedBy = worker._id;
+  order.lastStatusUpdatedAt = changedAt;
+  order.statusHistory.push({ status, changedBy: worker._id, changedAt, note });
   if (status === ORDER_STATUS.PREPARING) order.preparedAt = new Date();
+  if (status === ORDER_STATUS.DELIVERED) order.deliveredAt = new Date();
   if (status === ORDER_STATUS.SERVED) order.servedAt = new Date();
+  if (status === ORDER_STATUS.CANCELLED) order.cancelledAt = new Date();
 
   await order.save();
   const updatedOrder = await getOrderById(order._id, { requesterId: worker._id, isAdmin: true });
@@ -246,10 +258,14 @@ export const cancelCustomerOrder = async ({ orderId, customerId, note }) => {
   }
 
   order.orderStatus = ORDER_STATUS.CANCELLED;
-  order.cancelledAt = new Date();
+  const changedAt = new Date();
+  order.cancelledAt = changedAt;
+  order.lastStatusUpdatedBy = customerId;
+  order.lastStatusUpdatedAt = changedAt;
   order.statusHistory.push({
     status: ORDER_STATUS.CANCELLED,
     changedBy: customerId,
+    changedAt,
     note: note || 'Cancelled by customer'
   });
 

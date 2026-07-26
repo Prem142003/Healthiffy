@@ -90,6 +90,14 @@ export const getPayments = async (query = {}, user) => {
   if (query.status) filter.status = query.status.toString().trim().toUpperCase();
   if (query.branch) filter.branch = query.branch;
   if (query.customer) filter.customer = query.customer;
+  if (query.worker) filter.verifiedBy = query.worker;
+  if (query.date) {
+    const date = new Date(query.date);
+    if (Number.isNaN(date.getTime())) throw new AppError('Payment date is invalid', 400);
+    const nextDate = new Date(date);
+    nextDate.setDate(date.getDate() + 1);
+    filter.createdAt = { $gte: date, $lt: nextDate };
+  }
 
   if (user?.role === 'WORKER') {
     const assignedBranchId = getAssignedBranchId(user);

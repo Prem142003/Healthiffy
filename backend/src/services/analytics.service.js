@@ -47,7 +47,7 @@ export const getAnalyticsSummary = async () => {
     sumRevenue(weekStart, tomorrowStart),
     sumRevenue(monthStart, tomorrowStart),
     Order.countDocuments(),
-    Order.countDocuments({ orderStatus: ORDER_STATUS.SERVED }),
+    Order.countDocuments({ orderStatus: { $in: [ORDER_STATUS.DELIVERED, ORDER_STATUS.SERVED] } }),
     Order.countDocuments({ orderStatus: ORDER_STATUS.PENDING }),
     Order.countDocuments({ orderStatus: ORDER_STATUS.CANCELLED }),
     Order.countDocuments({ paymentStatus: PAYMENT_STATUS.PAID }),

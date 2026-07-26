@@ -7,7 +7,7 @@ import { getSocket } from '../../services/socket';
 const columns = [
   { status: 'PENDING', title: 'Paid Orders', action: 'PREPARING', label: 'Start Preparing' },
   { status: 'PREPARING', title: 'Preparing', action: 'READY', label: 'Mark Ready' },
-  { status: 'READY', title: 'Ready', action: 'SERVED', label: 'Mark Served' }
+  { status: 'READY', title: 'Ready', action: 'DELIVERED', label: 'Mark Delivered' }
 ];
 
 export const WorkerDashboard = () => {
@@ -89,6 +89,10 @@ export const WorkerDashboard = () => {
     } catch (apiError) {
       setError(apiError.response?.data?.message || 'Unable to update order status.');
     }
+  };
+
+  const cancelOrder = async (order) => {
+    await moveOrder(order, 'CANCELLED');
   };
 
   const verifyPendingPayment = async (payment) => {
@@ -190,6 +194,15 @@ export const WorkerDashboard = () => {
                           >
                             {column.label}
                           </button>
+                          {order.orderStatus === 'PENDING' && (
+                            <button
+                              className="mt-2 w-full rounded-md border border-red-200 px-3 py-2 text-sm font-medium text-red-700"
+                              onClick={() => cancelOrder(order)}
+                              type="button"
+                            >
+                              Cancel Order
+                            </button>
+                          )}
                         </article>
                       ))
                     ) : (
