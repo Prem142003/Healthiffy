@@ -11,7 +11,13 @@ export const authenticate = catchAsync(async (req, _res, next) => {
     throw new AppError('Authentication token is required', 401);
   }
 
-  const decoded = verifyAccessToken(token);
+  let decoded;
+  try {
+    decoded = verifyAccessToken(token);
+  } catch (_error) {
+    throw new AppError('Invalid or expired authentication token', 401);
+  }
+
   const user = await User.findById(decoded.sub).populate('assignedBranch', 'name slug status isActive');
 
   if (!user || !user.isActive) {
