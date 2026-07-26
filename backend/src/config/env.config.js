@@ -2,6 +2,19 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+const firstDefined = (...keys) => {
+  for (const key of keys) {
+    const value = process.env[key];
+    if (value !== undefined && value !== '') return value;
+  }
+  return undefined;
+};
+
+const parseBoolean = (value, fallback = false) => {
+  if (value === undefined || value === '') return fallback;
+  return ['true', '1', 'yes'].includes(String(value).toLowerCase());
+};
+
 const required = [
   'MONGO_URI',
   'JWT_ACCESS_SECRET',
@@ -20,7 +33,7 @@ export const env = {
   nodeEnv: process.env.NODE_ENV || 'development',
   port: process.env.PORT || 5000,
   mongoUri: process.env.MONGO_URI,
-  clientUrl: process.env.CLIENT_URL,
+  clientUrl: firstDefined('FRONTEND_URL', 'CLIENT_URL') || 'http://localhost:5173',
   corsOrigins: (process.env.CORS_ORIGINS || '')
     .split(',')
     .map((origin) => origin.trim())
@@ -32,11 +45,12 @@ export const env = {
   refreshCookieName: process.env.REFRESH_COOKIE_NAME || 'hf_refresh_token',
   cookieDomain: process.env.COOKIE_DOMAIN || undefined,
   smtp: {
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT || 587),
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-    from: process.env.EMAIL_FROM || 'Healthiffy <no-reply@healthiffy.example>'
+    host: firstDefined('SMTP_HOST', 'EMAIL_HOST', 'MAIL_HOST'),
+    port: Number(firstDefined('SMTP_PORT', 'EMAIL_PORT', 'MAIL_PORT') || 587),
+    secure: parseBoolean(firstDefined('SMTP_SECURE', 'EMAIL_SECURE', 'MAIL_SECURE')),
+    user: firstDefined('SMTP_USER', 'EMAIL_USER', 'MAIL_USER'),
+    pass: firstDefined('SMTP_PASS', 'EMAIL_PASS', 'MAIL_PASS'),
+    from: firstDefined('EMAIL_FROM', 'SMTP_FROM', 'MAIL_FROM') || 'Healthiffy <no-reply@healthiffy.example>'
   },
   cloudinary: {
     cloudName: process.env.CLOUDINARY_CLOUD_NAME,

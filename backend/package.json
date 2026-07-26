@@ -10,6 +10,7 @@
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "seed:admin": "node src/database/seedAdmin.js",
+    "verify:email": "node src/scripts/verifyEmail.js",
     "test": "node --test"
   },
   "dependencies": {

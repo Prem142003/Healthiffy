@@ -1,33 +1,118 @@
 import nodemailer from 'nodemailer';
 import { env } from '../config/env.config.js';
 
-const canSendEmail = Boolean(env.smtp.host && env.smtp.user && env.smtp.pass);
+let transporter;
 
-const createTransporter = () =>
-  nodemailer.createTransport({
-    host: env.smtp.host,
-    port: env.smtp.port,
-    secure: env.smtp.port === 465,
-    auth: {
-      user: env.smtp.user,
-      pass: env.smtp.pass
-    }
-  });
+const getMissingSmtpKeys = () =>
+  [
+    ['host', env.smtp.host],
+    ['user', env.smtp.user],
+    ['pass', env.smtp.pass]
+  ]
+    .filter(([, value]) => !value)
+    .map(([key]) => key);
 
-export const sendEmail = async ({ to, subject, text }) => {
-  if (!canSendEmail) {
-    if (env.isProduction) {
-      throw new Error('SMTP is not configured');
-    }
+const canSendEmail = () => getMissingSmtpKeys().length === 0;
 
-    console.log(`[email skipped] To: ${to} | Subject: ${subject} | ${text}`);
-    return;
+const getTransporter = () => {
+  if (!transporter) {
+    transporter = nodemailer.createTransport({
+      host: env.smtp.host,
+      port: env.smtp.port,
+      secure: env.smtp.secure || env.smtp.port === 465,
+      auth: {
+        user: env.smtp.user,
+        pass: env.smtp.pass
+      }
+    });
   }
 
-  await createTransporter().sendMail({
+  return transporter;
+};
+
+const sanitizeEmailError = (error) => ({
+  message: error.message,
+  code: error.code,
+  command: error.command,
+  responseCode: error.responseCode,
+  response: error.response
+});
+
+export const verifyEmailTransporter = async () => {
+  const missingKeys = getMissingSmtpKeys();
+  console.log('[email] SMTP config check', {
+    host: env.smtp.host || null,
+    port: env.smtp.port,
+    secure: env.smtp.secure || env.smtp.port === 465,
+    userConfigured: Boolean(env.smtp.user),
+    passConfigured: Boolean(env.smtp.pass),
     from: env.smtp.from,
+    frontendUrl: env.clientUrl,
+    missingKeys
+  });
+
+  if (!canSendEmail()) {
+    const message = `SMTP is not configured. Missing: ${missingKeys.join(', ')}`;
+    if (env.isProduction) {
+      console.error(`[email] ${message}`);
+    } else {
+      console.warn(`[email] ${message}. Emails will be skipped in development.`);
+    }
+    return false;
+  }
+
+  try {
+    await getTransporter().verify();
+    console.log('[email] SMTP transporter verified successfully');
+    return true;
+  } catch (error) {
+    console.error('[email] SMTP transporter verification failed', sanitizeEmailError(error));
+    return false;
+  }
+};
+
+export const sendEmail = async ({ to, subject, text, html }) => {
+  console.log('[email] Send requested', {
     to,
     subject,
-    text
+    host: env.smtp.host || null,
+    from: env.smtp.from
   });
+
+  if (!canSendEmail()) {
+    const missingKeys = getMissingSmtpKeys();
+    if (env.isProduction) {
+      throw new Error(`SMTP is not configured. Missing: ${missingKeys.join(', ')}`);
+    }
+
+    console.warn('[email] Skipped because SMTP is not configured', { to, subject, missingKeys });
+    return { skipped: true, missingKeys };
+  }
+
+  try {
+    const info = await getTransporter().sendMail({
+      from: env.smtp.from,
+      to,
+      subject,
+      text,
+      html
+    });
+
+    console.log('[email] Sent successfully', {
+      to,
+      subject,
+      messageId: info.messageId,
+      accepted: info.accepted,
+      rejected: info.rejected
+    });
+
+    return info;
+  } catch (error) {
+    console.error('[email] Send failed', {
+      to,
+      subject,
+      ...sanitizeEmailError(error)
+    });
+    throw error;
+  }
 };

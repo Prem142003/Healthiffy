@@ -14,6 +14,30 @@ import {
   verifyRefreshToken
 } from './token.service.js';
 
+const escapeHtml = (value) =>
+  String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+
+const buildButtonEmail = ({ title, intro, actionText, actionUrl, outro }) => ({
+  text: `${intro}\n\n${actionText}: ${actionUrl}\n\n${outro}`,
+  html: `
+    <div style="font-family:Arial,sans-serif;line-height:1.6;color:#17202a;max-width:560px;margin:0 auto;padding:24px">
+      <h2 style="margin:0 0 16px;color:#0f5132">${escapeHtml(title)}</h2>
+      <p>${escapeHtml(intro)}</p>
+      <p style="margin:24px 0">
+        <a href="${escapeHtml(actionUrl)}" style="background:#198754;color:#ffffff;padding:12px 18px;text-decoration:none;border-radius:6px;display:inline-block">${escapeHtml(actionText)}</a>
+      </p>
+      <p style="word-break:break-all;font-size:13px;color:#52616b">If the button does not work, open this link: ${escapeHtml(actionUrl)}</p>
+      <p>${escapeHtml(outro)}</p>
+      <p style="font-size:12px;color:#6c757d">Healthiffy</p>
+    </div>
+  `
+});
+
 const issueAuthTokens = async (user, req) => {
   const accessToken = signAccessToken(user);
   const refreshToken = signRefreshToken(user);
@@ -28,14 +52,36 @@ const sendVerificationEmail = async (user) => {
   await user.save({ validateBeforeSave: false });
 
   const verificationUrl = `${env.clientUrl}/verify-email?token=${rawToken}&email=${encodeURIComponent(user.email)}`;
+  const emailContent = buildButtonEmail({
+    title: 'Verify your Healthiffy account',
+    intro: `Hi ${user.name || 'there'}, welcome to Healthiffy. Please verify your email address to finish setting up your account.`,
+    actionText: 'Verify email',
+    actionUrl: verificationUrl,
+    outro: 'This verification link expires in 30 minutes.'
+  });
+
+  console.log('[auth] Sending verification email', {
+    userId: user._id,
+    email: user.email,
+    verificationUrl: verificationUrl.replace(rawToken, '[token]')
+  });
+
   try {
     await sendEmail({
       to: user.email,
       subject: 'Verify your Healthiffy account',
-      text: `Verify your account using this link: ${verificationUrl}`
+      text: emailContent.text,
+      html: emailContent.html
     });
+    console.log('[auth] Verification email flow completed', { userId: user._id, email: user.email });
   } catch (error) {
-    console.error('Verification email failed:', error.message);
+    console.error('[auth] Verification email failed', {
+      userId: user._id,
+      email: user.email,
+      message: error.message,
+      code: error.code,
+      responseCode: error.responseCode
+    });
   }
 };
 
@@ -145,14 +191,36 @@ export const requestPasswordReset = async (email) => {
   await user.save({ validateBeforeSave: false });
 
   const resetUrl = `${env.clientUrl}/reset-password?token=${rawToken}&email=${encodeURIComponent(user.email)}`;
+  const emailContent = buildButtonEmail({
+    title: 'Reset your Healthiffy password',
+    intro: `Hi ${user.name || 'there'}, we received a request to reset your Healthiffy password.`,
+    actionText: 'Reset password',
+    actionUrl: resetUrl,
+    outro: 'This reset link expires in 15 minutes. If you did not request this, you can ignore this email.'
+  });
+
+  console.log('[auth] Sending password reset email', {
+    userId: user._id,
+    email: user.email,
+    resetUrl: resetUrl.replace(rawToken, '[token]')
+  });
+
   try {
     await sendEmail({
       to: user.email,
       subject: 'Reset your Healthiffy password',
-      text: `Reset your password using this link: ${resetUrl}`
+      text: emailContent.text,
+      html: emailContent.html
     });
+    console.log('[auth] Password reset email flow completed', { userId: user._id, email: user.email });
   } catch (error) {
-    console.error('Password reset email failed:', error.message);
+    console.error('[auth] Password reset email failed', {
+      userId: user._id,
+      email: user.email,
+      message: error.message,
+      code: error.code,
+      responseCode: error.responseCode
+    });
     throw error;
   }
 };
