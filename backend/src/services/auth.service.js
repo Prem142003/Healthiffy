@@ -221,7 +221,6 @@ export const requestPasswordReset = async (email) => {
       code: error.code,
       responseCode: error.responseCode
     });
-    throw error;
   }
 };
 

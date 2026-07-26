@@ -6,21 +6,30 @@ import { authApi } from '../../services/authApi';
 export const ResetPassword = () => {
   const [params] = useSearchParams();
   const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
   const { register, handleSubmit, formState: { isSubmitting } } = useForm();
 
   const onSubmit = async (values) => {
-    const response = await authApi.resetPassword({
-      email: params.get('email'),
-      token: params.get('token'),
-      password: values.password
-    });
-    setMessage(response.data.message);
+    setMessage('');
+    setError('');
+
+    try {
+      const response = await authApi.resetPassword({
+        email: params.get('email'),
+        token: params.get('token'),
+        password: values.password
+      });
+      setMessage(response.data.message);
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || 'Could not reset password. Please try again.');
+    }
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <h1 className="text-xl font-semibold">Reset Password</h1>
       {message && <p className="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{message}</p>}
+      {error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
       <label className="block text-sm font-medium">
         New Password
         <input className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" type="password" {...register('password', { required: true, minLength: 8 })} />

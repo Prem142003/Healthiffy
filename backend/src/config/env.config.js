@@ -16,30 +16,30 @@ const parseBoolean = (value, fallback = false) => {
 };
 
 const required = [
-  'MONGO_URI',
-  'JWT_ACCESS_SECRET',
-  'JWT_REFRESH_SECRET',
-  'JWT_ACCESS_EXPIRES_IN',
-  'JWT_REFRESH_EXPIRES_IN'
+  ['MONGO_URI', 'MONGODB_URI'],
+  ['JWT_ACCESS_SECRET', 'JWT_SECRET'],
+  ['JWT_REFRESH_SECRET', 'JWT_SECRET'],
+  ['JWT_ACCESS_EXPIRES_IN'],
+  ['JWT_REFRESH_EXPIRES_IN']
 ];
 
-for (const key of required) {
-  if (!process.env[key]) {
-    throw new Error(`Missing required environment variable: ${key}`);
+for (const keys of required) {
+  if (!keys.some((key) => process.env[key])) {
+    throw new Error(`Missing required environment variable: ${keys.join(' or ')}`);
   }
 }
 
 export const env = {
   nodeEnv: process.env.NODE_ENV || 'development',
   port: process.env.PORT || 5000,
-  mongoUri: process.env.MONGO_URI,
+  mongoUri: firstDefined('MONGO_URI', 'MONGODB_URI'),
   clientUrl: firstDefined('FRONTEND_URL', 'CLIENT_URL') || 'http://localhost:5173',
   corsOrigins: (process.env.CORS_ORIGINS || '')
     .split(',')
     .map((origin) => origin.trim())
     .filter(Boolean),
-  jwtAccessSecret: process.env.JWT_ACCESS_SECRET,
-  jwtRefreshSecret: process.env.JWT_REFRESH_SECRET,
+  jwtAccessSecret: firstDefined('JWT_ACCESS_SECRET', 'JWT_SECRET'),
+  jwtRefreshSecret: firstDefined('JWT_REFRESH_SECRET', 'JWT_SECRET'),
   jwtAccessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN,
   jwtRefreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN,
   refreshCookieName: process.env.REFRESH_COOKIE_NAME || 'hf_refresh_token',

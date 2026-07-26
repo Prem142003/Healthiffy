@@ -8,6 +8,14 @@ export const errorHandler = (err, _req, res, _next) => {
   const statusCode = err.statusCode || 500;
   const isOperational = err.isOperational || statusCode < 500;
 
+  console.error('[error]', {
+    statusCode,
+    message: err.message,
+    stack: err.stack,
+    name: err.name,
+    code: err.code
+  });
+
   res.status(statusCode).json({
     success: false,
     message: isOperational ? err.message : 'Internal server error'
