@@ -6,7 +6,8 @@ const initialState = {
   accessToken: null,
   status: 'idle',
   error: null,
-  isAuthenticated: false
+  isAuthenticated: false,
+  hasCheckedSession: false
 };
 
 const extractData = (response) => response.data.data;
@@ -83,19 +84,34 @@ const authSlice = createSlice({
         state.user = action.payload.user;
         state.accessToken = action.payload.accessToken;
         state.isAuthenticated = true;
+        state.hasCheckedSession = true;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload;
       })
+      .addCase(refreshSession.pending, (state) => {
+        state.status = 'loading';
+        state.error = null;
+      })
       .addCase(refreshSession.fulfilled, (state, action) => {
+        state.status = 'succeeded';
         state.user = action.payload.user;
         state.accessToken = action.payload.accessToken;
         state.isAuthenticated = true;
+        state.hasCheckedSession = true;
+      })
+      .addCase(refreshSession.rejected, (state) => {
+        state.status = 'idle';
+        state.user = null;
+        state.accessToken = null;
+        state.isAuthenticated = false;
+        state.hasCheckedSession = true;
       })
       .addCase(fetchMe.fulfilled, (state, action) => {
         state.user = action.payload.user;
         state.isAuthenticated = true;
+        state.hasCheckedSession = true;
       })
       .addCase(logoutUser.fulfilled, () => initialState);
   }
