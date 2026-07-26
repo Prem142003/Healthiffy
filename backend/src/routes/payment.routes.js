@@ -13,12 +13,13 @@ import { authorizeRoles } from '../middlewares/role.middleware.js';
 
 const router = Router();
 const adminOnly = [authenticate, authorizeRoles(ROLES.ADMIN)];
+const adminOrWorker = [authenticate, authorizeRoles(ROLES.ADMIN, ROLES.WORKER)];
 
 router.get('/settings/public', getPublicPaymentSettingsHandler);
 router.patch('/settings', adminOnly, updatePaymentSettingsHandler);
 router.post('/orders/:orderId/manual-confirm', authenticate, authorizeRoles(ROLES.CUSTOMER, ROLES.ADMIN), submitManualPaymentHandler);
-router.get('/', adminOnly, listPaymentsHandler);
-router.patch('/:id/verify', adminOnly, verifyPaymentHandler);
-router.patch('/:id/reject', adminOnly, rejectPaymentHandler);
+router.get('/', adminOrWorker, listPaymentsHandler);
+router.patch('/:id/verify', adminOrWorker, verifyPaymentHandler);
+router.patch('/:id/reject', adminOrWorker, rejectPaymentHandler);
 
 export default router;

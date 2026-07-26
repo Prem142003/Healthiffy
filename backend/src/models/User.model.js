@@ -39,7 +39,11 @@ const userSchema = new mongoose.Schema(
     },
     assignedBranch: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Branch'
+      ref: 'Branch',
+      required() {
+        return this.role === ROLES.WORKER;
+      },
+      index: true
     },
     isEmailVerified: {
       type: Boolean,

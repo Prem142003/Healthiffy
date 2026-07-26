@@ -104,7 +104,7 @@ export const registerCustomer = async (payload) => {
 };
 
 export const loginUser = async ({ email, password }, req) => {
-  const user = await User.findOne({ email }).select('+password');
+  const user = await User.findOne({ email }).select('+password').populate('assignedBranch', 'name slug status isActive');
   if (!user || !(await user.comparePassword(password))) {
     throw new AppError('Invalid email or password', 401);
   }
@@ -138,7 +138,10 @@ export const refreshUserSession = async (refreshToken, req) => {
     user: decoded.sub,
     revokedAt: { $exists: false },
     expiresAt: { $gt: new Date() }
-  }).populate('user');
+  }).populate({
+    path: 'user',
+    populate: { path: 'assignedBranch', select: 'name slug status isActive' }
+  });
 
   if (!storedToken || !storedToken.user?.isActive) {
     throw new AppError('Invalid refresh token', 401);

@@ -4,6 +4,8 @@ import { PaymentSetting } from '../models/PaymentSetting.model.js';
 import { Order } from '../models/Order.model.js';
 import { AppError } from '../utils/AppError.js';
 
+const getAssignedBranchId = (user) => user.assignedBranch?._id || user.assignedBranch;
+
 const populatePayment = (query) =>
   query
     .populate('order', 'orderNumber totalAmount paymentStatus orderStatus')
@@ -82,12 +84,21 @@ export const submitManualPayment = async ({ orderId, customerId, payload }) => {
   return populatePayment(Payment.findById(payment._id));
 };
 
-export const getPayments = async (query = {}) => {
+export const getPayments = async (query = {}, user) => {
   const { page, limit, skip } = getPagination(query);
   const filter = {};
   if (query.status) filter.status = query.status.toString().trim().toUpperCase();
   if (query.branch) filter.branch = query.branch;
   if (query.customer) filter.customer = query.customer;
+
+  if (user?.role === 'WORKER') {
+    const assignedBranchId = getAssignedBranchId(user);
+    if (!assignedBranchId) throw new AppError('Worker is not assigned to a branch', 403);
+    if (query.branch && query.branch.toString() !== assignedBranchId.toString()) {
+      throw new AppError('You do not have permission to access this branch', 403);
+    }
+    filter.branch = assignedBranchId;
+  }
 
   const [payments, total] = await Promise.all([
     populatePayment(Payment.find(filter).sort(query.sort || '-createdAt').skip(skip).limit(limit)),
@@ -105,13 +116,24 @@ export const getPayments = async (query = {}) => {
   };
 };
 
-export const verifyPayment = async ({ paymentId, userId }) => {
+const assertPaymentBranchAccess = (payment, user) => {
+  if (user?.role !== 'WORKER') return;
+
+  const assignedBranchId = getAssignedBranchId(user);
+  if (!assignedBranchId) throw new AppError('Worker is not assigned to a branch', 403);
+  if (payment.branch.toString() !== assignedBranchId.toString()) {
+    throw new AppError('You do not have permission to access this branch', 403);
+  }
+};
+
+export const verifyPayment = async ({ paymentId, user }) => {
   const payment = await Payment.findById(paymentId);
   if (!payment) throw new AppError('Payment not found', 404);
+  assertPaymentBranchAccess(payment, user);
   if (payment.status === PAYMENT_STATUS.PAID) throw new AppError('Payment is already verified', 400);
 
   payment.status = PAYMENT_STATUS.PAID;
-  payment.verifiedBy = userId;
+  payment.verifiedBy = user._id;
   payment.verifiedAt = new Date();
   payment.rejectionReason = undefined;
   await payment.save();
@@ -124,13 +146,14 @@ export const verifyPayment = async ({ paymentId, userId }) => {
   return populatePayment(Payment.findById(payment._id));
 };
 
-export const rejectPayment = async ({ paymentId, reason, userId }) => {
+export const rejectPayment = async ({ paymentId, reason, user }) => {
   const payment = await Payment.findById(paymentId);
   if (!payment) throw new AppError('Payment not found', 404);
+  assertPaymentBranchAccess(payment, user);
   if (payment.status === PAYMENT_STATUS.PAID) throw new AppError('Verified payment cannot be rejected', 400);
 
   payment.status = PAYMENT_STATUS.REJECTED;
-  payment.verifiedBy = userId;
+  payment.verifiedBy = user._id;
   payment.verifiedAt = new Date();
   payment.rejectionReason = reason;
   await payment.save();

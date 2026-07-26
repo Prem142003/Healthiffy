@@ -36,12 +36,12 @@ export const submitManualPaymentHandler = catchAsync(async (req, res) => {
 });
 
 export const listPaymentsHandler = catchAsync(async (req, res) => {
-  const data = await getPayments(req.query);
+  const data = await getPayments(req.query, req.user);
   sendSuccess(res, 200, 'Payments fetched', data);
 });
 
 export const verifyPaymentHandler = catchAsync(async (req, res) => {
-  const payment = await verifyPayment({ paymentId: req.params.id, userId: req.user._id });
+  const payment = await verifyPayment({ paymentId: req.params.id, user: req.user });
   sendSuccess(res, 200, 'Payment verified', { payment });
 });
 
@@ -50,7 +50,7 @@ export const rejectPaymentHandler = catchAsync(async (req, res) => {
   const payment = await rejectPayment({
     paymentId: req.params.id,
     reason: payload.reason,
-    userId: req.user._id
+    user: req.user
   });
   sendSuccess(res, 200, 'Payment rejected', { payment });
 });

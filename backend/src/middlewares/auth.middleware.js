@@ -12,7 +12,7 @@ export const authenticate = catchAsync(async (req, _res, next) => {
   }
 
   const decoded = verifyAccessToken(token);
-  const user = await User.findById(decoded.sub);
+  const user = await User.findById(decoded.sub).populate('assignedBranch', 'name slug status isActive');
 
   if (!user || !user.isActive) {
     throw new AppError('User no longer exists or is inactive', 401);

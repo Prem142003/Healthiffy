@@ -9,6 +9,7 @@ export const Workers = () => {
   const { workers, status, error } = useSelector((state) => state.users);
   const { branches } = useSelector((state) => state.branches);
   const { register, handleSubmit, reset } = useForm();
+  const activeBranches = branches.filter((branch) => branch.isActive);
 
   useEffect(() => {
     dispatch(fetchWorkers({ limit: 100 }));
@@ -18,6 +19,11 @@ export const Workers = () => {
   const onSubmit = async (values) => {
     const result = await dispatch(createWorker(values));
     if (createWorker.fulfilled.match(result)) reset();
+  };
+
+  const changeWorkerBranch = (worker, assignedBranch) => {
+    if (!assignedBranch || assignedBranch === (worker.assignedBranch?._id || worker.assignedBranch)) return;
+    dispatch(updateUser({ id: worker._id, payload: { assignedBranch } }));
   };
 
   return (
@@ -36,12 +42,12 @@ export const Workers = () => {
               <input className="w-full rounded-md border border-slate-300 px-3 py-2" placeholder="Email" type="email" {...register('email', { required: true })} />
               <input className="w-full rounded-md border border-slate-300 px-3 py-2" placeholder="Phone" {...register('phone')} />
               <input className="w-full rounded-md border border-slate-300 px-3 py-2" placeholder="Password" type="password" {...register('password', { required: true })} />
-              <select className="w-full rounded-md border border-slate-300 px-3 py-2" {...register('assignedBranch')}>
+              <select className="w-full rounded-md border border-slate-300 px-3 py-2" {...register('assignedBranch', { required: true })}>
                 <option value="">Assign branch</option>
-                {branches.map((branch) => <option key={branch._id} value={branch._id}>{branch.name}</option>)}
+                {activeBranches.map((branch) => <option key={branch._id} value={branch._id}>{branch.name}</option>)}
               </select>
             </div>
-            <button className="mt-4 rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white">Create Worker</button>
+            <button className="mt-4 rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white disabled:opacity-60" disabled={!activeBranches.length}>Create Worker</button>
           </form>
           <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
             {status === 'loading' ? <p className="p-5 text-sm text-slate-600">Loading workers...</p> : (
@@ -51,7 +57,16 @@ export const Workers = () => {
                   {workers.map((worker) => (
                     <tr key={worker._id}>
                       <td className="px-4 py-3"><div className="font-medium">{worker.name}</div><div className="text-xs text-slate-500">{worker.email}</div></td>
-                      <td className="px-4 py-3">{worker.assignedBranch?.name || 'Unassigned'}</td>
+                      <td className="px-4 py-3">
+                        <select
+                          className="w-full min-w-40 rounded-md border border-slate-300 px-2 py-1"
+                          value={worker.assignedBranch?._id || worker.assignedBranch || ''}
+                          onChange={(event) => changeWorkerBranch(worker, event.target.value)}
+                        >
+                          <option value="" disabled>Assign branch</option>
+                          {activeBranches.map((branch) => <option key={branch._id} value={branch._id}>{branch.name}</option>)}
+                        </select>
+                      </td>
                       <td className="px-4 py-3">{worker.isActive ? 'Active' : 'Inactive'}</td>
                       <td className="px-4 py-3"><button className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium" onClick={() => dispatch(updateUser({ id: worker._id, payload: { isActive: !worker.isActive } }))}>{worker.isActive ? 'Deactivate' : 'Activate'}</button></td>
                     </tr>

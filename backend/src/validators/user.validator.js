@@ -18,6 +18,12 @@ const optionalObjectId = (value, field) => {
   return value;
 };
 
+const requiredObjectId = (value, field) => {
+  if (!value) throw new AppError(`${field} is required`, 400);
+  if (!mongoose.Types.ObjectId.isValid(value)) throw new AppError(`${field} is invalid`, 400);
+  return value;
+};
+
 const normalizeEmail = (email) => {
   const normalized = requiredString(email, 'Email').toLowerCase();
   if (!validator.isEmail(normalized)) throw new AppError('Email is invalid', 400);
@@ -29,7 +35,7 @@ export const validateCreateWorker = (body) => ({
   email: normalizeEmail(body.email),
   phone: typeof body.phone === 'string' ? body.phone.trim() : undefined,
   password: requiredString(body.password, 'Password', 200),
-  assignedBranch: optionalObjectId(body.assignedBranch, 'Assigned branch')
+  assignedBranch: requiredObjectId(body.assignedBranch, 'Assigned branch')
 });
 
 export const validateUpdateUser = (body) => {

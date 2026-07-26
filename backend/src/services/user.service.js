@@ -44,25 +44,31 @@ export const createWorker = async (payload) => {
   const existingUser = await User.findOne({ email: payload.email });
   if (existingUser) throw new AppError('A user with this email already exists', 409);
 
-  if (payload.assignedBranch) {
-    const branch = await Branch.findOne({ _id: payload.assignedBranch, isActive: true });
-    if (!branch) throw new AppError('Assigned branch is invalid', 400);
-  }
+  const branch = await Branch.findOne({ _id: payload.assignedBranch, isActive: true });
+  if (!branch) throw new AppError('Assigned branch is invalid', 400);
 
-  return User.create({
+  const user = await User.create({
     ...payload,
     role: ROLES.WORKER,
     isEmailVerified: true
   });
+
+  return populateUser(User.findById(user._id));
 };
 
 export const updateUser = async (userId, payload) => {
-  if (payload.assignedBranch) {
-    const branch = await Branch.findOne({ _id: payload.assignedBranch, isActive: true });
+  const user = await User.findById(userId);
+  if (!user) throw new AppError('User not found', 404);
+
+  const nextAssignedBranch = 'assignedBranch' in payload ? payload.assignedBranch : user.assignedBranch;
+  if (user.role === ROLES.WORKER && !nextAssignedBranch) {
+    throw new AppError('Worker must be assigned to a branch', 400);
+  }
+
+  if (nextAssignedBranch) {
+    const branch = await Branch.findOne({ _id: nextAssignedBranch, isActive: true });
     if (!branch) throw new AppError('Assigned branch is invalid', 400);
   }
 
-  const user = await populateUser(User.findByIdAndUpdate(userId, payload, { new: true, runValidators: true }));
-  if (!user) throw new AppError('User not found', 404);
-  return user;
+  return populateUser(User.findByIdAndUpdate(userId, payload, { new: true, runValidators: true }));
 };

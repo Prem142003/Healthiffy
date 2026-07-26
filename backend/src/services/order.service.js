@@ -19,6 +19,8 @@ const populateOrder = (query) =>
     .populate('branch', 'name slug')
     .populate('items.menuItem', 'name slug');
 
+const getAssignedBranchId = (worker) => worker.assignedBranch?._id || worker.assignedBranch;
+
 const buildAdminFilter = (query) => {
   const filter = {};
   if (query.branch) filter.branch = query.branch;
@@ -170,13 +172,17 @@ export const updateOrderStatus = async ({ orderId, status, note, userId }) => {
 };
 
 export const getWorkerOrders = async (worker, query = {}) => {
-  if (!worker.assignedBranch) {
+  const assignedBranchId = getAssignedBranchId(worker);
+  if (!assignedBranchId) {
     throw new AppError('Worker is not assigned to a branch', 403);
+  }
+  if (query.branch && query.branch.toString() !== assignedBranchId.toString()) {
+    throw new AppError('You do not have permission to access this branch', 403);
   }
 
   const { page, limit, skip } = getPagination(query);
   const filter = {
-    branch: worker.assignedBranch,
+    branch: assignedBranchId,
     paymentStatus: PAYMENT_STATUS.PAID,
     orderStatus: query.orderStatus
       ? query.orderStatus.toString().trim().toUpperCase()
@@ -200,12 +206,16 @@ export const getWorkerOrders = async (worker, query = {}) => {
 };
 
 export const updateWorkerOrderStatus = async ({ orderId, status, note, worker }) => {
-  if (!worker.assignedBranch) {
+  const assignedBranchId = getAssignedBranchId(worker);
+  if (!assignedBranchId) {
     throw new AppError('Worker is not assigned to a branch', 403);
   }
 
-  const order = await Order.findOne({ _id: orderId, branch: worker.assignedBranch });
-  if (!order) throw new AppError('Order not found for assigned branch', 404);
+  const order = await Order.findById(orderId);
+  if (!order) throw new AppError('Order not found', 404);
+  if (order.branch.toString() !== assignedBranchId.toString()) {
+    throw new AppError('You do not have permission to access this branch', 403);
+  }
   if (order.paymentStatus !== PAYMENT_STATUS.PAID) {
     throw new AppError('Workers can only prepare paid orders', 400);
   }
