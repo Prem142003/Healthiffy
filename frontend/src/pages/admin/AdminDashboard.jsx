@@ -61,14 +61,15 @@ export const AdminDashboard = () => {
           <>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <StatCard label="Today Revenue" value={formatCurrency(summary.todayRevenue)} />
+              <StatCard label="Yesterday Revenue" value={formatCurrency(summary.yesterdayRevenue)} />
               <StatCard label="Weekly Revenue" value={formatCurrency(summary.weeklyRevenue)} />
               <StatCard label="Monthly Revenue" value={formatCurrency(summary.monthlyRevenue)} />
               <StatCard label="Average Order Value" value={formatCurrency(summary.averageOrderValue)} />
               <StatCard label="Total Orders" value={summary.totalOrders} />
-              <StatCard label="Completed Orders" value={summary.completedOrders} />
-              <StatCard label="Pending Orders" value={summary.pendingOrders} />
-              <StatCard label="Cancelled Orders" value={summary.cancelledOrders} />
-              <StatCard label="Paid Orders" value={summary.paidOrders} />
+              <StatCard label="Verified Orders" value={summary.completedOrders} />
+              <StatCard label="Pending Verifications" value={summary.pendingOrders} />
+              <StatCard label="Rejected Payments" value={summary.cancelledOrders} />
+              <StatCard label="Verified Payments" value={summary.paidOrders} />
               <StatCard label="Unpaid Orders" value={summary.unpaidOrders} />
               <StatCard label="Customers" value={summary.totalCustomers} />
               <StatCard label="Workers" value={summary.totalWorkers} />

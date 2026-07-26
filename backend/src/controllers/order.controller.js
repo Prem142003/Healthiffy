@@ -1,17 +1,13 @@
 import { ROLES } from '../constants/role.constants.js';
 import { sendSuccess } from '../helpers/apiResponse.helper.js';
 import {
-  cancelCustomerOrder,
   createOrder,
   getCustomerOrders,
   getOrderById,
-  getOrders,
-  updateOrderStatus
+  getOrders
 } from '../services/order.service.js';
 import {
-  validateCancelOrder,
-  validateCreateOrder,
-  validateUpdateOrderStatus
+  validateCreateOrder
 } from '../validators/order.validator.js';
 import { catchAsync } from '../utils/catchAsync.js';
 
@@ -37,25 +33,4 @@ export const getOrderHandler = catchAsync(async (req, res) => {
     isAdmin: req.user.role === ROLES.ADMIN
   });
   sendSuccess(res, 200, 'Order fetched', { order });
-});
-
-export const updateOrderStatusHandler = catchAsync(async (req, res) => {
-  const payload = validateUpdateOrderStatus(req.body);
-  const order = await updateOrderStatus({
-    orderId: req.params.id,
-    status: payload.status,
-    note: payload.note,
-    userId: req.user._id
-  });
-  sendSuccess(res, 200, 'Order status updated', { order });
-});
-
-export const cancelMyOrderHandler = catchAsync(async (req, res) => {
-  const payload = validateCancelOrder(req.body);
-  const order = await cancelCustomerOrder({
-    orderId: req.params.id,
-    customerId: req.user._id,
-    note: payload.note
-  });
-  sendSuccess(res, 200, 'Order cancelled', { order });
 });

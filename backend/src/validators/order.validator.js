@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-import { ORDER_STATUS } from '../constants/order.constants.js';
 import { AppError } from '../utils/AppError.js';
 
 const assertObjectId = (value, field) => {
@@ -34,19 +33,3 @@ export const validateCreateOrder = (body) => {
         : undefined
   };
 };
-
-export const validateUpdateOrderStatus = (body) => {
-  const status = body.status?.toString().trim().toUpperCase();
-  if (!Object.values(ORDER_STATUS).includes(status)) {
-    throw new AppError('Order status is invalid', 400);
-  }
-
-  return {
-    status,
-    note: typeof body.note === 'string' ? body.note.trim().slice(0, 200) : undefined
-  };
-};
-
-export const validateCancelOrder = (body) => ({
-  note: typeof body.note === 'string' ? body.note.trim().slice(0, 200) : undefined
-});

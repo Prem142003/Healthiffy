@@ -35,22 +35,6 @@ export const fetchAdminOrders = createAsyncThunk('orders/fetchAdmin', async (par
   }
 });
 
-export const updateOrderStatus = createAsyncThunk('orders/updateStatus', async ({ id, payload }, { rejectWithValue }) => {
-  try {
-    return extractData(await orderApi.updateOrderStatus(id, payload));
-  } catch (error) {
-    return rejectWithValue(extractError(error));
-  }
-});
-
-export const cancelOrder = createAsyncThunk('orders/cancel', async ({ id, payload }, { rejectWithValue }) => {
-  try {
-    return extractData(await orderApi.cancelOrder(id, payload));
-  } catch (error) {
-    return rejectWithValue(extractError(error));
-  }
-});
-
 const upsertOrder = (orders, order) => {
   const index = orders.findIndex((item) => item._id === order._id);
   if (index === -1) {
@@ -89,12 +73,6 @@ const orderSlice = createSlice({
         state.pagination = action.payload.pagination;
       })
       .addCase(createOrder.fulfilled, (state, action) => {
-        upsertOrder(state.orders, action.payload.order);
-      })
-      .addCase(updateOrderStatus.fulfilled, (state, action) => {
-        upsertOrder(state.orders, action.payload.order);
-      })
-      .addCase(cancelOrder.fulfilled, (state, action) => {
         upsertOrder(state.orders, action.payload.order);
       })
       .addMatcher(

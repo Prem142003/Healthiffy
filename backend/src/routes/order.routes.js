@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { ROLES } from '../constants/role.constants.js';
 import {
-  cancelMyOrderHandler,
   createOrderHandler,
   getOrderHandler,
   listAdminOrders,
@@ -17,7 +16,6 @@ router.use(authenticate);
 router.post('/', authorizeRoles(ROLES.CUSTOMER, ROLES.ADMIN), createOrderHandler);
 router.get('/my-orders', authorizeRoles(ROLES.CUSTOMER, ROLES.ADMIN), listMyOrders);
 router.get('/admin/all', authorizeRoles(ROLES.ADMIN), listAdminOrders);
-router.patch('/:id/cancel', authorizeRoles(ROLES.CUSTOMER), cancelMyOrderHandler);
 router.get('/:id', getOrderHandler);
 
 export default router;

@@ -2,13 +2,15 @@ import { PAYMENT_STATUS } from '../constants/order.constants.js';
 import { Payment } from '../models/Payment.model.js';
 import { PaymentSetting } from '../models/PaymentSetting.model.js';
 import { Order } from '../models/Order.model.js';
+import { getOrderById } from './order.service.js';
+import { emitOrderUpdated } from '../sockets/socket.server.js';
 import { AppError } from '../utils/AppError.js';
 
 const getAssignedBranchId = (user) => user.assignedBranch?._id || user.assignedBranch;
 
 const populatePayment = (query) =>
   query
-    .populate('order', 'orderNumber totalAmount paymentStatus orderStatus')
+    .populate('order', 'orderNumber totalAmount paymentStatus')
     .populate('customer', 'name email phone')
     .populate('branch', 'name slug')
     .populate('verifiedBy', 'name email');
@@ -52,9 +54,8 @@ export const submitManualPayment = async ({ orderId, customerId, payload }) => {
   ]);
 
   if (!order) throw new AppError('Order not found', 404);
-  if (order.paymentStatus === PAYMENT_STATUS.PAID) throw new AppError('Order is already paid', 400);
+  if ([PAYMENT_STATUS.VERIFIED, PAYMENT_STATUS.PAID].includes(order.paymentStatus)) throw new AppError('Order is already verified', 400);
   if (order.paymentStatus === PAYMENT_STATUS.PENDING_VERIFICATION) throw new AppError('Payment is already pending verification', 400);
-  if (order.orderStatus === 'CANCELLED') throw new AppError('Cannot submit payment for a cancelled order', 400);
   if (!settings?.isEnabled || !settings.upiId) throw new AppError('UPI payment is not configured', 400);
 
   const payment = await Payment.findOneAndUpdate(
@@ -69,6 +70,7 @@ export const submitManualPayment = async ({ orderId, customerId, payload }) => {
       transactionReference: payload.transactionReference,
       customerNote: payload.customerNote,
       screenshot: payload.screenshot,
+      paymentTime: new Date(),
       status: PAYMENT_STATUS.PENDING_VERIFICATION,
       rejectionReason: undefined,
       verifiedBy: undefined,
@@ -138,9 +140,9 @@ export const verifyPayment = async ({ paymentId, user }) => {
   const payment = await Payment.findById(paymentId);
   if (!payment) throw new AppError('Payment not found', 404);
   assertPaymentBranchAccess(payment, user);
-  if (payment.status === PAYMENT_STATUS.PAID) throw new AppError('Payment is already verified', 400);
+  if ([PAYMENT_STATUS.VERIFIED, PAYMENT_STATUS.PAID].includes(payment.status)) throw new AppError('Payment is already verified', 400);
 
-  payment.status = PAYMENT_STATUS.PAID;
+  payment.status = PAYMENT_STATUS.VERIFIED;
   payment.verifiedBy = user._id;
   payment.verifiedAt = new Date();
   payment.rejectionReason = undefined;
@@ -148,9 +150,11 @@ export const verifyPayment = async ({ paymentId, user }) => {
 
   await Order.findByIdAndUpdate(payment.order, {
     payment: payment._id,
-    paymentStatus: PAYMENT_STATUS.PAID
+    paymentStatus: PAYMENT_STATUS.VERIFIED
   });
 
+  const updatedOrder = await getOrderById(payment.order, { requesterId: user._id, isAdmin: true });
+  emitOrderUpdated(updatedOrder);
   return populatePayment(Payment.findById(payment._id));
 };
 
@@ -158,7 +162,7 @@ export const rejectPayment = async ({ paymentId, reason, user }) => {
   const payment = await Payment.findById(paymentId);
   if (!payment) throw new AppError('Payment not found', 404);
   assertPaymentBranchAccess(payment, user);
-  if (payment.status === PAYMENT_STATUS.PAID) throw new AppError('Verified payment cannot be rejected', 400);
+  if ([PAYMENT_STATUS.VERIFIED, PAYMENT_STATUS.PAID].includes(payment.status)) throw new AppError('Verified payment cannot be rejected', 400);
 
   payment.status = PAYMENT_STATUS.REJECTED;
   payment.verifiedBy = user._id;
@@ -171,5 +175,7 @@ export const rejectPayment = async ({ paymentId, reason, user }) => {
     paymentStatus: PAYMENT_STATUS.REJECTED
   });
 
+  const updatedOrder = await getOrderById(payment.order, { requesterId: user._id, isAdmin: true });
+  emitOrderUpdated(updatedOrder);
   return populatePayment(Payment.findById(payment._id));
 };

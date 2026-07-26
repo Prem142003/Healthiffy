@@ -9,6 +9,19 @@ import {
   updateCartItem
 } from '../../redux/slices/cartSlice';
 
+const instructionOptions = [
+  'Less Sugar',
+  'Extra Sugar',
+  'No Sugar',
+  'Less Spicy',
+  'Medium Spicy',
+  'Extra Spicy',
+  'Extra Cheese',
+  'No Onion',
+  'Extra Ice',
+  'Less Ice'
+];
+
 export const Checkout = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -25,8 +38,19 @@ export const Checkout = () => {
     const result = await dispatch(checkoutCart({ specialInstructions }));
     if (checkoutCart.fulfilled.match(result)) {
       setSuccess(`Order ${result.payload.order.orderNumber} placed successfully.`);
-      setTimeout(() => navigate('/my-orders'), 800);
+      setTimeout(() => navigate(`/payment/${result.payload.order._id}`), 800);
     }
+  };
+
+  const toggleInstruction = (instruction) => {
+    const current = specialInstructions
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean);
+    const next = current.includes(instruction)
+      ? current.filter((item) => item !== instruction)
+      : [...current, instruction];
+    setSpecialInstructions(next.join(', '));
   };
 
   return (
@@ -97,8 +121,25 @@ export const Checkout = () => {
               <div className="mt-3 text-sm text-slate-600">{cart.branch?.name}</div>
               <label className="mt-4 block text-sm font-medium">
                 Special Instructions
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {instructionOptions.map((instruction) => (
+                    <button
+                      key={instruction}
+                      className={`rounded-full border px-3 py-1 text-xs font-medium ${
+                        specialInstructions.includes(instruction)
+                          ? 'border-emerald-700 bg-emerald-50 text-emerald-700'
+                          : 'border-slate-300 text-slate-700'
+                      }`}
+                      onClick={() => toggleInstruction(instruction)}
+                      type="button"
+                    >
+                      {instruction}
+                    </button>
+                  ))}
+                </div>
                 <textarea
                   className="mt-1 min-h-24 w-full rounded-md border border-slate-300 px-3 py-2"
+                  placeholder="Add a custom note, or select options above"
                   value={specialInstructions}
                   onChange={(event) => setSpecialInstructions(event.target.value)}
                 />

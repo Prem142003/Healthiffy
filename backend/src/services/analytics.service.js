@@ -1,4 +1,4 @@
-import { ORDER_STATUS, PAYMENT_STATUS } from '../constants/order.constants.js';
+import { PAYMENT_STATUS } from '../constants/order.constants.js';
 import { Branch } from '../models/Branch.model.js';
 import { MenuItem } from '../models/MenuItem.model.js';
 import { Order } from '../models/Order.model.js';
@@ -7,12 +7,13 @@ import { ROLES } from '../constants/role.constants.js';
 
 const startOfDay = (date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
 const addDays = (date, days) => new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
+const verifiedPaymentStatuses = [PAYMENT_STATUS.VERIFIED, PAYMENT_STATUS.PAID];
 
 const sumRevenue = async (from, to) => {
   const [result] = await Order.aggregate([
     {
       $match: {
-        paymentStatus: PAYMENT_STATUS.PAID,
+        paymentStatus: { $in: verifiedPaymentStatuses },
         createdAt: { $gte: from, $lt: to }
       }
     },
@@ -25,11 +26,13 @@ export const getAnalyticsSummary = async () => {
   const now = new Date();
   const todayStart = startOfDay(now);
   const tomorrowStart = addDays(todayStart, 1);
+  const yesterdayStart = addDays(todayStart, -1);
   const weekStart = addDays(todayStart, -6);
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
   const [
     today,
+    yesterday,
     week,
     month,
     totalOrders,
@@ -44,14 +47,15 @@ export const getAnalyticsSummary = async () => {
     totalMenuItems
   ] = await Promise.all([
     sumRevenue(todayStart, tomorrowStart),
+    sumRevenue(yesterdayStart, todayStart),
     sumRevenue(weekStart, tomorrowStart),
     sumRevenue(monthStart, tomorrowStart),
     Order.countDocuments(),
-    Order.countDocuments({ orderStatus: { $in: [ORDER_STATUS.DELIVERED, ORDER_STATUS.SERVED] } }),
-    Order.countDocuments({ orderStatus: ORDER_STATUS.PENDING }),
-    Order.countDocuments({ orderStatus: ORDER_STATUS.CANCELLED }),
-    Order.countDocuments({ paymentStatus: PAYMENT_STATUS.PAID }),
-    Order.countDocuments({ paymentStatus: { $ne: PAYMENT_STATUS.PAID } }),
+    Order.countDocuments({ paymentStatus: { $in: verifiedPaymentStatuses } }),
+    Order.countDocuments({ paymentStatus: PAYMENT_STATUS.PENDING_VERIFICATION }),
+    Order.countDocuments({ paymentStatus: PAYMENT_STATUS.REJECTED }),
+    Order.countDocuments({ paymentStatus: { $in: verifiedPaymentStatuses } }),
+    Order.countDocuments({ paymentStatus: { $nin: verifiedPaymentStatuses } }),
     User.countDocuments({ role: ROLES.CUSTOMER }),
     User.countDocuments({ role: ROLES.WORKER }),
     Branch.countDocuments({ isActive: true }),
@@ -62,6 +66,7 @@ export const getAnalyticsSummary = async () => {
 
   return {
     todayRevenue: today.revenue,
+    yesterdayRevenue: yesterday.revenue,
     weeklyRevenue: week.revenue,
     monthlyRevenue: month.revenue,
     totalOrders,
@@ -84,7 +89,7 @@ export const getRevenueChart = async () => {
   return Order.aggregate([
     {
       $match: {
-        paymentStatus: PAYMENT_STATUS.PAID,
+        paymentStatus: { $in: verifiedPaymentStatuses },
         createdAt: { $gte: from }
       }
     },
@@ -101,7 +106,7 @@ export const getRevenueChart = async () => {
 
 export const getBranchRevenue = () =>
   Order.aggregate([
-    { $match: { paymentStatus: PAYMENT_STATUS.PAID } },
+    { $match: { paymentStatus: { $in: verifiedPaymentStatuses } } },
     { $group: { _id: '$branch', revenue: { $sum: '$totalAmount' }, orders: { $sum: 1 } } },
     { $sort: { revenue: -1 } },
     { $limit: 8 },

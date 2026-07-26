@@ -66,6 +66,7 @@ const paymentSchema = new mongoose.Schema(
       type: String,
       enum: [
         PAYMENT_STATUS.PENDING_VERIFICATION,
+        PAYMENT_STATUS.VERIFIED,
         PAYMENT_STATUS.PAID,
         PAYMENT_STATUS.REJECTED
       ],
@@ -76,6 +77,7 @@ const paymentSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User'
     },
+    paymentTime: Date,
     verifiedAt: Date,
     rejectionReason: {
       type: String,

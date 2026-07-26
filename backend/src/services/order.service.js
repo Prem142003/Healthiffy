@@ -1,9 +1,8 @@
-import { ORDER_STATUS, ORDER_STATUS_FLOW, PAYMENT_STATUS } from '../constants/order.constants.js';
+import { PAYMENT_STATUS } from '../constants/order.constants.js';
 import { generateOrderNumber } from '../helpers/orderNumber.helper.js';
 import { Branch } from '../models/Branch.model.js';
 import { MenuItem } from '../models/MenuItem.model.js';
 import { Order } from '../models/Order.model.js';
-import { emitOrderUpdated } from '../sockets/socket.server.js';
 import { AppError } from '../utils/AppError.js';
 
 const getPagination = (query) => {
@@ -17,6 +16,7 @@ const populateOrder = (query) =>
   query
     .populate('customer', 'name email phone')
     .populate('branch', 'name slug')
+    .populate('payment', 'status method transactionReference screenshot paymentTime verifiedBy verifiedAt')
     .populate('items.menuItem', 'name slug');
 
 const getAssignedBranchId = (worker) => worker.assignedBranch?._id || worker.assignedBranch;
@@ -25,7 +25,6 @@ const buildAdminFilter = (query) => {
   const filter = {};
   if (query.branch) filter.branch = query.branch;
   if (query.customer) filter.customer = query.customer;
-  if (query.orderStatus) filter.orderStatus = query.orderStatus.toString().trim().toUpperCase();
   if (query.paymentStatus) filter.paymentStatus = query.paymentStatus.toString().trim().toUpperCase();
   if (query.orderNumber) filter.orderNumber = query.orderNumber.toString().trim().toUpperCase();
   return filter;
@@ -80,17 +79,7 @@ export const createOrder = async (payload, customerId) => {
     items: orderItems,
     subtotal,
     totalAmount: subtotal,
-    specialInstructions: payload.specialInstructions,
-    statusHistory: [
-      {
-        status: ORDER_STATUS.PENDING,
-        changedBy: customerId,
-        changedAt: new Date(),
-        note: 'Order placed'
-      }
-    ],
-    lastStatusUpdatedBy: customerId,
-    lastStatusUpdatedAt: new Date()
+    specialInstructions: payload.specialInstructions
   });
 
   return getOrderById(order._id, { requesterId: customerId, isAdmin: false });
@@ -121,7 +110,7 @@ export const getCustomerOrders = async (customerId, query = {}) => {
   const { page, limit, skip } = getPagination(query);
   const filter = {
     customer: customerId,
-    ...(query.orderStatus ? { orderStatus: query.orderStatus.toString().trim().toUpperCase() } : {})
+    ...(query.paymentStatus ? { paymentStatus: query.paymentStatus.toString().trim().toUpperCase() } : {})
   };
 
   const [orders, total] = await Promise.all([
@@ -153,31 +142,6 @@ export const getOrderById = async (orderId, { requesterId, isAdmin }) => {
   return order;
 };
 
-export const updateOrderStatus = async ({ orderId, status, note, userId }) => {
-  const order = await Order.findById(orderId);
-  if (!order) throw new AppError('Order not found', 404);
-
-  if (!ORDER_STATUS_FLOW[order.orderStatus].includes(status)) {
-    throw new AppError(`Order cannot move from ${order.orderStatus} to ${status}`, 400);
-  }
-
-  const changedAt = new Date();
-  order.orderStatus = status;
-  order.lastStatusUpdatedBy = userId;
-  order.lastStatusUpdatedAt = changedAt;
-  order.statusHistory.push({ status, changedBy: userId, changedAt, note });
-
-  if (status === ORDER_STATUS.PREPARING) order.preparedAt = new Date();
-  if (status === ORDER_STATUS.DELIVERED) order.deliveredAt = new Date();
-  if (status === ORDER_STATUS.SERVED) order.servedAt = new Date();
-  if (status === ORDER_STATUS.CANCELLED) order.cancelledAt = new Date();
-
-  await order.save();
-  const updatedOrder = await getOrderById(order._id, { requesterId: userId, isAdmin: true });
-  emitOrderUpdated(updatedOrder);
-  return updatedOrder;
-};
-
 export const getWorkerOrders = async (worker, query = {}) => {
   const assignedBranchId = getAssignedBranchId(worker);
   if (!assignedBranchId) {
@@ -190,10 +154,9 @@ export const getWorkerOrders = async (worker, query = {}) => {
   const { page, limit, skip } = getPagination(query);
   const filter = {
     branch: assignedBranchId,
-    paymentStatus: PAYMENT_STATUS.PAID,
-    orderStatus: query.orderStatus
-      ? query.orderStatus.toString().trim().toUpperCase()
-      : { $in: [ORDER_STATUS.PENDING, ORDER_STATUS.PREPARING, ORDER_STATUS.READY] }
+    paymentStatus: query.paymentStatus
+      ? query.paymentStatus.toString().trim().toUpperCase()
+      : PAYMENT_STATUS.PENDING_VERIFICATION
   };
 
   const [orders, total] = await Promise.all([
@@ -210,65 +173,4 @@ export const getWorkerOrders = async (worker, query = {}) => {
       totalPages: Math.ceil(total / limit)
     }
   };
-};
-
-export const updateWorkerOrderStatus = async ({ orderId, status, note, worker }) => {
-  const assignedBranchId = getAssignedBranchId(worker);
-  if (!assignedBranchId) {
-    throw new AppError('Worker is not assigned to a branch', 403);
-  }
-
-  const order = await Order.findById(orderId);
-  if (!order) throw new AppError('Order not found', 404);
-  if (order.branch.toString() !== assignedBranchId.toString()) {
-    throw new AppError('You do not have permission to access this branch', 403);
-  }
-  if (order.paymentStatus !== PAYMENT_STATUS.PAID) {
-    throw new AppError('Workers can only prepare paid orders', 400);
-  }
-  if (![ORDER_STATUS.PREPARING, ORDER_STATUS.READY, ORDER_STATUS.DELIVERED, ORDER_STATUS.CANCELLED].includes(status)) {
-    throw new AppError('Worker status must be PREPARING, READY, DELIVERED, or CANCELLED', 400);
-  }
-  if (!ORDER_STATUS_FLOW[order.orderStatus].includes(status)) {
-    throw new AppError(`Order cannot move from ${order.orderStatus} to ${status}`, 400);
-  }
-
-  const changedAt = new Date();
-  order.orderStatus = status;
-  order.lastStatusUpdatedBy = worker._id;
-  order.lastStatusUpdatedAt = changedAt;
-  order.statusHistory.push({ status, changedBy: worker._id, changedAt, note });
-  if (status === ORDER_STATUS.PREPARING) order.preparedAt = new Date();
-  if (status === ORDER_STATUS.DELIVERED) order.deliveredAt = new Date();
-  if (status === ORDER_STATUS.SERVED) order.servedAt = new Date();
-  if (status === ORDER_STATUS.CANCELLED) order.cancelledAt = new Date();
-
-  await order.save();
-  const updatedOrder = await getOrderById(order._id, { requesterId: worker._id, isAdmin: true });
-  emitOrderUpdated(updatedOrder);
-  return updatedOrder;
-};
-
-export const cancelCustomerOrder = async ({ orderId, customerId, note }) => {
-  const order = await Order.findOne({ _id: orderId, customer: customerId });
-  if (!order) throw new AppError('Order not found', 404);
-
-  if (order.orderStatus !== ORDER_STATUS.PENDING) {
-    throw new AppError('Only pending orders can be cancelled', 400);
-  }
-
-  order.orderStatus = ORDER_STATUS.CANCELLED;
-  const changedAt = new Date();
-  order.cancelledAt = changedAt;
-  order.lastStatusUpdatedBy = customerId;
-  order.lastStatusUpdatedAt = changedAt;
-  order.statusHistory.push({
-    status: ORDER_STATUS.CANCELLED,
-    changedBy: customerId,
-    changedAt,
-    note: note || 'Cancelled by customer'
-  });
-
-  await order.save();
-  return getOrderById(order._id, { requesterId: customerId, isAdmin: false });
 };

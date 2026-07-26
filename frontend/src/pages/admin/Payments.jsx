@@ -53,7 +53,8 @@ export const Payments = () => {
             <select className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm" value={filters.status} onChange={(event) => setFilter('status', event.target.value)}>
               <option value="">All statuses</option>
               <option value="PENDING_VERIFICATION">Pending verification</option>
-              <option value="PAID">Paid</option>
+              <option value="VERIFIED">Verified</option>
+              <option value="PAID">Paid (legacy)</option>
               <option value="REJECTED">Rejected</option>
             </select>
           </div>

@@ -1,11 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { orderApi } from '../../services/orderApi';
 import { getSocket } from '../../services/socket';
-
-const steps = ['PENDING', 'PREPARING', 'READY', 'DELIVERED'];
-const normalizeStatus = (status) => (status === 'SERVED' ? 'DELIVERED' : status);
 
 export const OrderTracking = () => {
   const { orderId } = useParams();
@@ -39,7 +36,7 @@ export const OrderTracking = () => {
     return () => socket.off('order:status-updated', handleOrderUpdated);
   }, [orderId, user?._id]);
 
-  const currentIndex = useMemo(() => Math.max(steps.indexOf(normalizeStatus(order?.orderStatus)), 0), [order?.orderStatus]);
+  const isVerified = ['VERIFIED', 'PAID'].includes(order?.paymentStatus);
 
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-8">
@@ -53,22 +50,26 @@ export const OrderTracking = () => {
         </div>
         {error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
         {order && (
-          <>
-            <div className="mb-6 flex flex-wrap gap-2">
-              <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">{order.paymentStatus}</span>
-              <span className="rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700">{normalizeStatus(order.orderStatus)}</span>
+          <div className="space-y-5">
+            <div className={isVerified ? 'rounded-lg bg-emerald-50 p-5 text-emerald-800' : 'rounded-lg bg-amber-50 p-5 text-amber-800'}>
+              <div className="text-xl font-semibold">{isVerified ? 'Payment Verified' : 'Payment Pending Verification'}</div>
+              <p className="mt-2 text-sm">
+                {isVerified
+                  ? 'Thank you! Your order has been confirmed. Enjoy your order!'
+                  : 'Thanks. A worker from your branch will verify your UPI payment shortly.'}
+              </p>
             </div>
-            <div className="space-y-4">
-              {steps.map((step, index) => (
-                <div key={step} className="flex items-center gap-3">
-                  <div className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold ${index <= currentIndex ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-500'}`}>
-                    {index + 1}
-                  </div>
-                  <div className="font-medium text-slate-950">{step}</div>
+            <div className="rounded-lg border border-slate-200 p-4">
+              <div className="text-sm text-slate-500">Payment Status</div>
+              <div className="mt-1 font-semibold text-slate-950">{order.paymentStatus}</div>
+              {order.specialInstructions && (
+                <div className="mt-4">
+                  <div className="text-sm text-slate-500">Special Instructions</div>
+                  <div className="mt-1 text-sm text-slate-700">{order.specialInstructions}</div>
                 </div>
-              ))}
+              )}
             </div>
-          </>
+          </div>
         )}
       </section>
     </main>

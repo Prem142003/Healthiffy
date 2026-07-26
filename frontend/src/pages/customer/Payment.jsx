@@ -26,8 +26,8 @@ export const Payment = () => {
     }));
 
     if (submitManualPayment.fulfilled.match(result)) {
-      setSuccess('Payment submitted for manual verification.');
-      setTimeout(() => navigate('/my-orders'), 900);
+      setSuccess('Payment submitted for verification.');
+      setTimeout(() => navigate(`/orders/${orderId}/track`), 900);
     }
   };
 
@@ -77,7 +77,7 @@ export const Payment = () => {
                 <textarea className="mt-1 min-h-20 w-full rounded-md border border-slate-300 px-3 py-2" value={customerNote} onChange={(event) => setCustomerNote(event.target.value)} />
               </label>
               <button className="w-full rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white" onClick={submitPayment} type="button">
-                I Have Paid
+                I've Paid
               </button>
             </div>
           </div>

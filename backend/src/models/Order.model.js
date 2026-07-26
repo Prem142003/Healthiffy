@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { ORDER_STATUS, PAYMENT_STATUS } from '../constants/order.constants.js';
+import { PAYMENT_STATUS } from '../constants/order.constants.js';
 
 const orderItemSchema = new mongoose.Schema(
   {
@@ -24,26 +24,6 @@ const orderItemSchema = new mongoose.Schema(
       required: true,
       min: 1
     }
-  },
-  { _id: false }
-);
-
-const statusHistorySchema = new mongoose.Schema(
-  {
-    status: {
-      type: String,
-      enum: Object.values(ORDER_STATUS),
-      required: true
-    },
-    changedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User'
-    },
-    changedAt: {
-      type: Date,
-      default: Date.now
-    },
-    note: String
   },
   { _id: false }
 );
@@ -102,32 +82,16 @@ const orderSchema = new mongoose.Schema(
       default: PAYMENT_STATUS.UNPAID,
       index: true
     },
-    orderStatus: {
-      type: String,
-      enum: Object.values(ORDER_STATUS),
-      default: ORDER_STATUS.PENDING,
-      index: true
-    },
-    statusHistory: [statusHistorySchema],
-    lastStatusUpdatedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User'
-    },
-    lastStatusUpdatedAt: Date,
     placedAt: {
       type: Date,
       default: Date.now
-    },
-    preparedAt: Date,
-    deliveredAt: Date,
-    servedAt: Date,
-    cancelledAt: Date
+    }
   },
   { timestamps: true }
 );
 
 orderSchema.index({ branch: 1, createdAt: -1 });
 orderSchema.index({ customer: 1, createdAt: -1 });
-orderSchema.index({ orderStatus: 1, paymentStatus: 1 });
+orderSchema.index({ paymentStatus: 1, createdAt: -1 });
 
 export const Order = mongoose.model('Order', orderSchema);
