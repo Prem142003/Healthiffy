@@ -11,5 +11,6 @@ export const authApi = {
   forgotPassword: (payload) => api.post('/auth/forgot-password', payload),
   resetPassword: (payload) => api.post('/auth/reset-password', payload),
   changePassword: (payload) => api.patch('/auth/change-password', payload),
+  deleteAccount: (payload) => api.delete('/auth/me', { data: payload }),
   me: () => api.get('/auth/me')
 };
