@@ -13,6 +13,7 @@ const getMissingSmtpKeys = () =>
     .map(([key]) => key);
 
 const canSendEmail = () => getMissingSmtpKeys().length === 0;
+const canSendResendEmail = () => Boolean(env.resend.apiKey && env.smtp.from);
 
 const getTransporter = () => {
   if (!transporter) {
@@ -46,6 +47,22 @@ const sanitizeEmailError = (error) => ({
 });
 
 export const verifyEmailTransporter = async () => {
+  if (env.emailProvider === 'resend') {
+    console.log('[email] Resend config check', {
+      provider: env.emailProvider,
+      apiKeyConfigured: Boolean(env.resend.apiKey),
+      from: env.smtp.from,
+      frontendUrl: env.clientUrl
+    });
+
+    if (!canSendResendEmail()) {
+      throw new Error('Resend is not configured. Missing RESEND_API_KEY or EMAIL_FROM.');
+    }
+
+    console.log('[email] Resend email provider configured successfully');
+    return true;
+  }
+
   const missingKeys = getMissingSmtpKeys();
   console.log('[email] SMTP config check', {
     host: env.smtp.host || null,
@@ -81,7 +98,60 @@ export const verifyEmailTransporter = async () => {
   }
 };
 
-export const sendEmail = async ({ to, subject, text, html }) => {
+const sendWithResend = async ({ to, subject, text, html }) => {
+  console.log('[email] Resend send requested', {
+    to,
+    subject,
+    from: env.smtp.from
+  });
+
+  if (!canSendResendEmail()) {
+    throw new Error('Resend is not configured. Missing RESEND_API_KEY or EMAIL_FROM.');
+  }
+
+  const response = await fetch(env.resend.apiUrl, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${env.resend.apiKey}`,
+      'Content-Type': 'application/json',
+      'User-Agent': 'Healthiffy Backend'
+    },
+    body: JSON.stringify({
+      from: env.smtp.from,
+      to: [to],
+      subject,
+      text,
+      html
+    })
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const error = new Error(data.message || data.error || 'Resend email send failed');
+    error.code = `RESEND_${response.status}`;
+    error.responseCode = response.status;
+    error.response = data;
+    console.error('[email] Resend send failed', {
+      to,
+      subject,
+      status: response.status,
+      response: data
+    });
+    throw error;
+  }
+
+  console.log('[email] Resend sent successfully', {
+    to,
+    subject,
+    messageId: data.id,
+    response: data
+  });
+
+  return data;
+};
+
+const sendWithSmtp = async ({ to, subject, text, html }) => {
   console.log('[email] Send requested', {
     to,
     subject,
@@ -126,4 +196,12 @@ export const sendEmail = async ({ to, subject, text, html }) => {
     });
     throw error;
   }
+};
+
+export const sendEmail = async ({ to, subject, text, html }) => {
+  if (env.emailProvider === 'resend') {
+    return sendWithResend({ to, subject, text, html });
+  }
+
+  return sendWithSmtp({ to, subject, text, html });
 };
