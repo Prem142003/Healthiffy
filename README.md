@@ -4,12 +4,13 @@ Production-oriented MERN application for a real cafe business.
 
 ## Built Modules
 
-- Authentication with JWT access tokens, refresh-token cookies, email verification, password reset, and RBAC
+- Google authentication for customers plus JWT staff authentication and RBAC
 - Branch, category, and menu management
 - Cloudinary image uploads for branch, category, menu, QR, and payment screenshots
-- Customer menu browsing, cart, checkout, order history, UPI payment, and live order tracking
-- Manual UPI/QR payment verification
-- Worker dashboard with Socket.IO updates for preparing, ready, and served
+- Customer menu browsing, cart, checkout, order history, Cashfree checkout, and live payment tracking
+- Cashfree UPI/card payments with backend verification and signed webhooks
+- Manual UPI/QR payment verification fallback
+- JWT-authenticated Socket.IO payment notifications
 - Admin dashboard with revenue, charts, users, workers, orders, payments, and analytics
 - Admin sidebar navigation
 - Seed admin script
@@ -31,11 +32,16 @@ MONGO_URI=
 MONGO_DB_NAME=healthiffy
 JWT_ACCESS_SECRET=
 JWT_REFRESH_SECRET=
-CLOUDINARY_CLOUD_NAME=du09ytnd5
+CLOUDINARY_CLOUD_NAME=
 CLOUDINARY_API_KEY=
 CLOUDINARY_API_SECRET=
 CORS_ORIGINS=
 CLIENT_URL=
+CASHFREE_ENV=sandbox
+CASHFREE_APP_ID=
+CASHFREE_SECRET_KEY=
+CASHFREE_API_VERSION=2025-01-01
+CASHFREE_WEBHOOK_URL=
 ```
 
 Frontend required values:
@@ -141,10 +147,15 @@ JWT_ACCESS_EXPIRES_IN=15m
 JWT_REFRESH_EXPIRES_IN=7d
 REFRESH_COOKIE_NAME=hf_refresh_token
 COOKIE_DOMAIN=
-CLOUDINARY_CLOUD_NAME=du09ytnd5
+CLOUDINARY_CLOUD_NAME=
 CLOUDINARY_API_KEY=
 CLOUDINARY_API_SECRET=
 CLOUDINARY_FOLDER=healthiffy
+CASHFREE_ENV=sandbox
+CASHFREE_APP_ID=
+CASHFREE_SECRET_KEY=
+CASHFREE_API_VERSION=2025-01-01
+CASHFREE_WEBHOOK_URL=https://your-backend.onrender.com/api/v1/payments/webhooks/cashfree
 ```
 
 Frontend can deploy to Vercel from `frontend/`.
@@ -183,8 +194,34 @@ Worker:
 
 - `/worker`
 
+Cashfree APIs:
+
+- `GET /api/v1/payments/settings/public`
+- `POST /api/v1/payments/orders/:orderId/cashfree/session`
+- `GET /api/v1/payments/orders/:orderId/cashfree/status`
+- `POST /api/v1/payments/webhooks/cashfree`
+
+## Cashfree Dashboard
+
+Start in the Cashfree sandbox. Configure:
+
+- Web domain: `https://healthiffy-frontend-blond.vercel.app`
+- Webhook: `https://healthiffy-backend-p1gj.onrender.com/api/v1/payments/webhooks/cashfree`
+- Webhook version: `2025-01-01`
+- Events: payment success, payment failed, and payment user dropped
+
+The backend confirms an order only after fetching the order from Cashfree and receiving
+`order_status: PAID`. Checkout callbacks alone never confirm an order.
+
+After deploying the model changes, run this once against the intended database to backfill
+customer totals from historical verified payments:
+
+```bash
+npm run migrate:payment-summaries --workspace backend
+```
+
 ## Notes
 
 - Razorpay and Stripe are intentionally not implemented.
-- Payment is manual UPI/QR with admin verification.
+- Manual UPI/QR remains available as a worker-verified fallback.
 - Worker accounts require `role: WORKER` and `assignedBranch`.

@@ -21,6 +21,7 @@ import paymentRoutes from './routes/payment.routes.js';
 import userRoutes from './routes/user.routes.js';
 import uploadRoutes from './routes/upload.routes.js';
 import workerRoutes from './routes/worker.routes.js';
+import { cashfreeWebhookHandler } from './controllers/payment.controller.js';
 
 export const app = express();
 
@@ -29,6 +30,11 @@ app.set('trust proxy', 1);
 app.use(helmet());
 app.use(cors(corsOptions));
 app.use(compression());
+app.post(
+  '/api/v1/payments/webhooks/cashfree',
+  express.raw({ type: 'application/json', limit: '100kb' }),
+  cashfreeWebhookHandler
+);
 app.use(express.json({ limit: '10kb' }));
 app.use(cookieParser());
 app.use(mongoSanitize());

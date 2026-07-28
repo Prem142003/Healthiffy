@@ -25,6 +25,8 @@ export const WorkerDashboard = () => {
 
   useEffect(() => {
     loadOrders();
+    window.addEventListener('healthiffy:payment-confirmed', loadOrders);
+    return () => window.removeEventListener('healthiffy:payment-confirmed', loadOrders);
   }, []);
 
   const verifyPayment = async (order) => {

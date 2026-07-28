@@ -6,7 +6,7 @@ import { getSocket } from '../../services/socket';
 
 export const OrderTracking = () => {
   const { orderId } = useParams();
-  const { user } = useSelector((state) => state.auth);
+  const { accessToken, user } = useSelector((state) => state.auth);
   const [order, setOrder] = useState(null);
   const [error, setError] = useState('');
 
@@ -24,9 +24,8 @@ export const OrderTracking = () => {
 
   useEffect(() => {
     if (!user?._id) return undefined;
-    const socket = getSocket();
+    const socket = getSocket(accessToken);
     socket.connect();
-    socket.emit('join:user', user._id);
 
     const handleOrderUpdated = (updatedOrder) => {
       if (updatedOrder._id === orderId) setOrder(updatedOrder);
@@ -34,9 +33,10 @@ export const OrderTracking = () => {
 
     socket.on('order:status-updated', handleOrderUpdated);
     return () => socket.off('order:status-updated', handleOrderUpdated);
-  }, [orderId, user?._id]);
+  }, [accessToken, orderId, user?._id]);
 
   const isVerified = ['VERIFIED', 'PAID'].includes(order?.paymentStatus);
+  const isProcessing = order?.paymentStatus === 'PROCESSING';
 
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-8">
@@ -52,11 +52,15 @@ export const OrderTracking = () => {
         {order && (
           <div className="space-y-5">
             <div className={isVerified ? 'rounded-lg bg-emerald-50 p-5 text-emerald-800' : 'rounded-lg bg-amber-50 p-5 text-amber-800'}>
-              <div className="text-xl font-semibold">{isVerified ? 'Payment Verified' : 'Payment Pending Verification'}</div>
+              <div className="text-xl font-semibold">
+                {isVerified ? 'Payment Verified' : isProcessing ? 'Payment Processing' : 'Payment Pending Verification'}
+              </div>
               <p className="mt-2 text-sm">
                 {isVerified
                   ? 'Thank you! Your order has been confirmed. Enjoy your order!'
-                  : 'Thanks. A worker from your branch will verify your UPI payment shortly.'}
+                  : isProcessing
+                    ? 'Cashfree is processing your payment. Confirmation will appear here automatically.'
+                    : 'Thanks. A worker from your branch will verify your manual UPI payment shortly.'}
               </p>
             </div>
             <div className="rounded-lg border border-slate-200 p-4">

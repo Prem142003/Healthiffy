@@ -6,6 +6,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { App } from './App';
 import { AuthBootstrap } from './components/auth/AuthBootstrap';
 import { store } from './redux/store';
+import 'react-toastify/dist/ReactToastify.css';
 import './styles/index.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(

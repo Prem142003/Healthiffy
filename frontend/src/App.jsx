@@ -1,4 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import { PaymentConfirmationListener } from './components/payments/PaymentConfirmationListener';
 import { AuthShell } from './pages/auth/AuthShell';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminLayout } from './pages/admin/AdminLayout';
@@ -25,7 +27,10 @@ import { ProtectedRoute } from './routes/ProtectedRoute';
 import { RoleRoute } from './routes/RoleRoute';
 
 export const App = () => (
-  <Routes>
+  <>
+    <PaymentConfirmationListener />
+    <ToastContainer position="top-right" autoClose={4500} newestOnTop />
+    <Routes>
     <Route path="/" element={<CustomerHome />} />
     <Route element={<AuthShell />}>
       <Route path="/login" element={<Login />} />
@@ -58,5 +63,6 @@ export const App = () => (
       </Route>
     </Route>
     <Route path="/unauthorized" element={<Unauthorized />} />
-  </Routes>
+    </Routes>
+  </>
 );

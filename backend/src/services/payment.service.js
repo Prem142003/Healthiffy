@@ -1,10 +1,23 @@
 import { PAYMENT_STATUS } from '../constants/order.constants.js';
+import {
+  CASHFREE_ORDER_STATUS,
+  PAYMENT_METHOD,
+  PAYMENT_PROVIDER
+} from '../constants/payment.constants.js';
 import { Payment } from '../models/Payment.model.js';
 import { PaymentSetting } from '../models/PaymentSetting.model.js';
 import { Order } from '../models/Order.model.js';
+import { User } from '../models/User.model.js';
 import { getOrderById } from './order.service.js';
 import { emitOrderUpdated } from '../sockets/socket.server.js';
 import { AppError } from '../utils/AppError.js';
+import {
+  createCashfreeOrder,
+  fetchCashfreeOrder,
+  getCashfreePublicSettings
+} from './cashfree.service.js';
+import { confirmPayment } from './paymentConfirmation.service.js';
+import { env } from '../config/env.config.js';
 
 const getAssignedBranchId = (user) => user.assignedBranch?._id || user.assignedBranch;
 
@@ -27,7 +40,8 @@ export const getPaymentSettings = async () => {
   return {
     upiId: settings?.upiId || '',
     qrCode: settings?.qrCode,
-    isEnabled: settings?.isEnabled ?? true
+    isEnabled: settings?.isEnabled ?? true,
+    cashfree: getCashfreePublicSettings()
   };
 };
 
@@ -71,6 +85,8 @@ export const submitManualPayment = async ({ orderId, customerId, payload }) => {
       customerNote: payload.customerNote,
       screenshot: payload.screenshot,
       paymentTime: new Date(),
+      method: PAYMENT_METHOD.UPI_MANUAL,
+      provider: PAYMENT_PROVIDER.MANUAL,
       status: PAYMENT_STATUS.PENDING_VERIFICATION,
       rejectionReason: undefined,
       verifiedBy: undefined,
@@ -84,6 +100,205 @@ export const submitManualPayment = async ({ orderId, customerId, payload }) => {
   await order.save();
 
   return populatePayment(Payment.findById(payment._id));
+};
+
+const normalizeIndianPhone = (value) => {
+  const digits = String(value || '').replace(/\D/g, '');
+  const normalized = digits.length === 12 && digits.startsWith('91') ? digits.slice(2) : digits;
+  return /^[6-9]\d{9}$/.test(normalized) ? normalized : null;
+};
+
+const assertOrderPaymentAccess = (order, user) => {
+  const customerId = order.customer?._id || order.customer;
+  if (user.role !== 'ADMIN' && customerId.toString() !== user._id.toString()) {
+    throw new AppError('You do not have permission to pay for this order', 403);
+  }
+};
+
+const cashfreeOrderIdFor = (orderId) => `HF_${orderId}_${Date.now()}`;
+
+const safeCashfreeSession = (payment) => ({
+  paymentSessionId: payment.cashfreePaymentSessionId,
+  cashfreeOrderId: payment.cashfreeOrderId,
+  environment: getCashfreePublicSettings().environment,
+  amount: payment.amount,
+  status: payment.status
+});
+
+export const createCashfreeSession = async ({ orderId, user, customerPhone }) => {
+  const order = await Order.findById(orderId).populate('customer', 'name email phone');
+  if (!order) throw new AppError('Order not found', 404);
+  assertOrderPaymentAccess(order, user);
+
+  if ([PAYMENT_STATUS.VERIFIED, PAYMENT_STATUS.PAID].includes(order.paymentStatus)) {
+    throw new AppError('Order is already paid', 400);
+  }
+  if (order.paymentStatus === PAYMENT_STATUS.PENDING_VERIFICATION) {
+    throw new AppError('Manual payment is already pending verification', 400);
+  }
+  if (order.totalAmount < 1) {
+    throw new AppError('Cashfree requires a minimum payment amount of Rs. 1', 400);
+  }
+
+  const phone = normalizeIndianPhone(customerPhone || order.customer.phone);
+  if (!phone) {
+    throw new AppError('A valid 10-digit Indian mobile number is required', 400);
+  }
+
+  const existingPayment = await Payment.findOne({ order: order._id }).select(
+    '+cashfreePaymentSessionId'
+  );
+  const sessionAge = existingPayment?.cashfreeSessionCreatedAt
+    ? Date.now() - existingPayment.cashfreeSessionCreatedAt.getTime()
+    : Number.POSITIVE_INFINITY;
+
+  if (
+    existingPayment?.provider === PAYMENT_PROVIDER.CASHFREE &&
+    existingPayment.status === PAYMENT_STATUS.PROCESSING &&
+    existingPayment.cashfreePaymentSessionId &&
+    sessionAge < 10 * 60 * 1000
+  ) {
+    return safeCashfreeSession(existingPayment);
+  }
+
+  const cashfreeOrderId = cashfreeOrderIdFor(order._id);
+  const orderMeta = {
+    payment_methods: 'upi,cc,dc',
+    ...(env.cashfree.webhookUrl
+      ? { notify_url: env.cashfree.webhookUrl }
+      : {})
+  };
+
+  const cashfreeOrder = await createCashfreeOrder(
+    {
+      order_id: cashfreeOrderId,
+      order_amount: Number(order.totalAmount.toFixed(2)),
+      order_currency: 'INR',
+      customer_details: {
+        customer_id: order.customer._id.toString(),
+        customer_phone: phone,
+        customer_email: order.customer.email,
+        customer_name: order.customer.name
+      },
+      order_meta: orderMeta,
+      payment_methods_filters: {
+        methods: {
+          action: 'ALLOW',
+          values: ['upi', 'credit_card', 'debit_card', 'prepaid_card']
+        }
+      },
+      order_note: `Healthiffy order ${order.orderNumber}`
+    },
+    `healthiffy:${cashfreeOrderId}`
+  );
+
+  if (!cashfreeOrder.payment_session_id) {
+    throw new AppError('Cashfree did not return a payment session', 502);
+  }
+
+  const payment = await Payment.findOneAndUpdate(
+    { order: order._id },
+    {
+      $set: {
+        order: order._id,
+        customer: order.customer._id,
+        branch: order.branch,
+        method: PAYMENT_METHOD.CASHFREE_CHECKOUT,
+        provider: PAYMENT_PROVIDER.CASHFREE,
+        amount: order.totalAmount,
+        status: PAYMENT_STATUS.PROCESSING,
+        cashfreeOrderId,
+        cashfreePaymentSessionId: cashfreeOrder.payment_session_id,
+        cashfreeStatus: cashfreeOrder.order_status || CASHFREE_ORDER_STATUS.ACTIVE,
+        cashfreeSessionCreatedAt: new Date(),
+        providerSyncedAt: new Date(),
+        rejectionReason: undefined,
+        failureCode: undefined,
+        failureReason: undefined,
+        failureSource: undefined
+      }
+    },
+    { new: true, upsert: true, runValidators: true }
+  ).select('+cashfreePaymentSessionId');
+
+  await Promise.all([
+    Order.findByIdAndUpdate(order._id, {
+      $set: {
+        payment: payment._id,
+        paymentStatus: PAYMENT_STATUS.PROCESSING
+      }
+    }),
+    order.customer.phone === phone
+      ? Promise.resolve()
+      : User.findByIdAndUpdate(order.customer._id, { $set: { phone } })
+  ]);
+
+  return safeCashfreeSession(payment);
+};
+
+export const syncCashfreePaymentStatus = async ({ orderId, user }) => {
+  const order = await Order.findById(orderId);
+  if (!order) throw new AppError('Order not found', 404);
+  assertOrderPaymentAccess(order, user);
+
+  const payment = await Payment.findOne({
+    order: order._id,
+    provider: PAYMENT_PROVIDER.CASHFREE
+  });
+  if (!payment?.cashfreeOrderId) {
+    throw new AppError('Cashfree payment session was not found for this order', 404);
+  }
+
+  const cashfreeOrder = await fetchCashfreeOrder(payment.cashfreeOrderId);
+  const providerStatus = cashfreeOrder.order_status;
+  const syncedAt = new Date();
+
+  if (providerStatus === CASHFREE_ORDER_STATUS.PAID) {
+    const confirmed = await confirmPayment({
+      paymentId: payment._id,
+      paymentStatus: PAYMENT_STATUS.PAID,
+      confirmedAt: cashfreeOrder.order_meta?.payment_time
+        ? new Date(cashfreeOrder.order_meta.payment_time)
+        : syncedAt,
+      cashfreeStatus: providerStatus
+    });
+
+    return {
+      status: PAYMENT_STATUS.PAID,
+      providerStatus,
+      payment: await populatePayment(Payment.findById(confirmed.payment._id))
+    };
+  }
+
+  const terminal = [
+    CASHFREE_ORDER_STATUS.FAILED,
+    CASHFREE_ORDER_STATUS.EXPIRED,
+    CASHFREE_ORDER_STATUS.TERMINATED
+  ].includes(providerStatus);
+  const paymentStatus = terminal ? PAYMENT_STATUS.REJECTED : PAYMENT_STATUS.PROCESSING;
+
+  await Promise.all([
+    Payment.findByIdAndUpdate(payment._id, {
+      $set: {
+        status: paymentStatus,
+        cashfreeStatus: providerStatus,
+        providerSyncedAt: syncedAt,
+        ...(terminal ? { rejectionReason: `Cashfree order ${providerStatus.toLowerCase()}` } : {})
+      }
+    }),
+    Order.findByIdAndUpdate(order._id, {
+      $set: {
+        payment: payment._id,
+        paymentStatus
+      }
+    })
+  ]);
+
+  return {
+    status: paymentStatus,
+    providerStatus,
+    payment: await populatePayment(Payment.findById(payment._id))
+  };
 };
 
 export const getPayments = async (query = {}, user) => {
@@ -148,13 +363,11 @@ export const verifyPayment = async ({ paymentId, user }) => {
   payment.rejectionReason = undefined;
   await payment.save();
 
-  await Order.findByIdAndUpdate(payment.order, {
-    payment: payment._id,
-    paymentStatus: PAYMENT_STATUS.VERIFIED
+  await confirmPayment({
+    paymentId: payment._id,
+    paymentStatus: PAYMENT_STATUS.VERIFIED,
+    confirmedAt: payment.verifiedAt
   });
-
-  const updatedOrder = await getOrderById(payment.order, { requesterId: user._id, isAdmin: true });
-  emitOrderUpdated(updatedOrder);
   return populatePayment(Payment.findById(payment._id));
 };
 

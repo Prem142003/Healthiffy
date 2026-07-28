@@ -37,6 +37,9 @@ export const AdminDashboard = () => {
 
   useEffect(() => {
     dispatch(fetchDashboardAnalytics());
+    const refreshAnalytics = () => dispatch(fetchDashboardAnalytics());
+    window.addEventListener('healthiffy:payment-confirmed', refreshAnalytics);
+    return () => window.removeEventListener('healthiffy:payment-confirmed', refreshAnalytics);
   }, [dispatch]);
 
   return (

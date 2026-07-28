@@ -65,6 +65,7 @@ const paymentSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: [
+        PAYMENT_STATUS.PROCESSING,
         PAYMENT_STATUS.PENDING_VERIFICATION,
         PAYMENT_STATUS.VERIFIED,
         PAYMENT_STATUS.PAID,
@@ -83,6 +84,45 @@ const paymentSchema = new mongoose.Schema(
       type: String,
       trim: true,
       maxlength: 300
+    },
+    cashfreeOrderId: {
+      type: String,
+      trim: true,
+      unique: true,
+      sparse: true,
+      index: true
+    },
+    cashfreePaymentSessionId: {
+      type: String,
+      trim: true,
+      select: false
+    },
+    cashfreePaymentId: {
+      type: String,
+      trim: true,
+      index: true
+    },
+    cashfreeStatus: {
+      type: String,
+      trim: true,
+      maxlength: 50
+    },
+    cashfreeSessionCreatedAt: Date,
+    providerSyncedAt: Date,
+    failureCode: {
+      type: String,
+      trim: true,
+      maxlength: 120
+    },
+    failureReason: {
+      type: String,
+      trim: true,
+      maxlength: 120
+    },
+    failureSource: {
+      type: String,
+      trim: true,
+      maxlength: 50
     }
   },
   { timestamps: true }

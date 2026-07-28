@@ -52,7 +52,11 @@ export const getAnalyticsSummary = async () => {
     sumRevenue(monthStart, tomorrowStart),
     Order.countDocuments(),
     Order.countDocuments({ paymentStatus: { $in: verifiedPaymentStatuses } }),
-    Order.countDocuments({ paymentStatus: PAYMENT_STATUS.PENDING_VERIFICATION }),
+    Order.countDocuments({
+      paymentStatus: {
+        $in: [PAYMENT_STATUS.PROCESSING, PAYMENT_STATUS.PENDING_VERIFICATION]
+      }
+    }),
     Order.countDocuments({ paymentStatus: PAYMENT_STATUS.REJECTED }),
     Order.countDocuments({ paymentStatus: { $in: verifiedPaymentStatuses } }),
     Order.countDocuments({ paymentStatus: { $nin: verifiedPaymentStatuses } }),

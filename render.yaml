@@ -1,8 +1,19 @@
 services:
   - type: web
-    name: healthybites-backend
+    name: healthiffy-backend
     env: node
     rootDir: backend
     buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /api/v1/health
+    envVars:
+      - key: CASHFREE_ENV
+        value: sandbox
+      - key: CASHFREE_API_VERSION
+        value: 2025-01-01
+      - key: CASHFREE_WEBHOOK_URL
+        value: https://healthiffy-backend-p1gj.onrender.com/api/v1/payments/webhooks/cashfree
+      - key: CASHFREE_APP_ID
+        sync: false
+      - key: CASHFREE_SECRET_KEY
+        sync: false

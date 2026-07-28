@@ -3,6 +3,37 @@ import mongoose from 'mongoose';
 import validator from 'validator';
 import { ROLES } from '../constants/role.constants.js';
 
+const paymentSummarySchema = new mongoose.Schema(
+  {
+    successfulPaymentCount: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+    totalPaidAmount: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+    lastPaymentAt: Date,
+    lastPaidOrder: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Order'
+    },
+    creditedPayments: {
+      type: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Payment'
+        }
+      ],
+      default: [],
+      select: false
+    }
+  },
+  { _id: false }
+);
+
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -63,6 +94,10 @@ const userSchema = new mongoose.Schema(
       default: true,
       index: true
     },
+    paymentSummary: {
+      type: paymentSummarySchema,
+      default: () => ({})
+    },
     lastLoginAt: Date
   },
   { timestamps: true }
@@ -83,6 +118,7 @@ userSchema.methods.toJSON = function toJSON() {
   delete user.password;
   delete user.emailVerificationToken;
   delete user.passwordResetToken;
+  if (user.paymentSummary) delete user.paymentSummary.creditedPayments;
   return user;
 };
 

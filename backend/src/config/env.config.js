@@ -41,6 +41,7 @@ if (isProduction) {
 }
 
 const clientUrl = firstDefined('FRONTEND_URL', 'CLIENT_URL') || 'http://localhost:5173';
+const cashfreeEnvironment = (process.env.CASHFREE_ENV || 'sandbox').trim().toLowerCase();
 
 export const env = {
   nodeEnv: process.env.NODE_ENV || 'development',
@@ -64,6 +65,14 @@ export const env = {
     apiKey: process.env.CLOUDINARY_API_KEY,
     apiSecret: process.env.CLOUDINARY_API_SECRET,
     folder: process.env.CLOUDINARY_FOLDER || 'healthiffy'
+  },
+  cashfree: {
+    environment: cashfreeEnvironment,
+    appId: process.env.CASHFREE_APP_ID,
+    secretKey: process.env.CASHFREE_SECRET_KEY,
+    apiVersion: process.env.CASHFREE_API_VERSION || '2025-01-01',
+    webhookUrl: process.env.CASHFREE_WEBHOOK_URL,
+    isConfigured: Boolean(process.env.CASHFREE_APP_ID && process.env.CASHFREE_SECRET_KEY)
   },
   isProduction
 };

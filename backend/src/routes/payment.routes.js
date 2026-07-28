@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { ROLES } from '../constants/role.constants.js';
 import {
+  createCashfreeSessionHandler,
+  getCashfreeStatusHandler,
   getPublicPaymentSettingsHandler,
   listPaymentsHandler,
   rejectPaymentHandler,
@@ -18,6 +20,18 @@ const workerOnly = [authenticate, authorizeRoles(ROLES.WORKER)];
 
 router.get('/settings/public', getPublicPaymentSettingsHandler);
 router.patch('/settings', adminOnly, updatePaymentSettingsHandler);
+router.post(
+  '/orders/:orderId/cashfree/session',
+  authenticate,
+  authorizeRoles(ROLES.CUSTOMER, ROLES.ADMIN),
+  createCashfreeSessionHandler
+);
+router.get(
+  '/orders/:orderId/cashfree/status',
+  authenticate,
+  authorizeRoles(ROLES.CUSTOMER, ROLES.ADMIN),
+  getCashfreeStatusHandler
+);
 router.post('/orders/:orderId/manual-confirm', authenticate, authorizeRoles(ROLES.CUSTOMER, ROLES.ADMIN), submitManualPaymentHandler);
 router.get('/', adminOrWorker, listPaymentsHandler);
 router.patch('/:id/verify', workerOnly, verifyPaymentHandler);

@@ -9,6 +9,9 @@ export const Users = () => {
 
   useEffect(() => {
     dispatch(fetchUsers({ role: role || undefined, limit: 100 }));
+    const refreshUsers = () => dispatch(fetchUsers({ role: role || undefined, limit: 100 }));
+    window.addEventListener('healthiffy:payment-confirmed', refreshUsers);
+    return () => window.removeEventListener('healthiffy:payment-confirmed', refreshUsers);
   }, [dispatch, role]);
 
   return (
@@ -29,14 +32,16 @@ export const Users = () => {
         {error && <p className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
         <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
           {status === 'loading' ? <p className="p-5 text-sm text-slate-600">Loading users...</p> : (
-            <table className="w-full min-w-[760px] text-left text-sm">
-              <thead className="bg-slate-100 text-slate-700"><tr><th className="px-4 py-3">User</th><th className="px-4 py-3">Role</th><th className="px-4 py-3">Branch</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Actions</th></tr></thead>
+            <table className="w-full min-w-[980px] text-left text-sm">
+              <thead className="bg-slate-100 text-slate-700"><tr><th className="px-4 py-3">User</th><th className="px-4 py-3">Role</th><th className="px-4 py-3">Branch</th><th className="px-4 py-3">Confirmed Payments</th><th className="px-4 py-3">Lifetime Paid</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Actions</th></tr></thead>
               <tbody className="divide-y divide-slate-200">
                 {users.map((user) => (
                   <tr key={user._id}>
                     <td className="px-4 py-3"><div className="font-medium">{user.name}</div><div className="text-xs text-slate-500">{user.email}</div></td>
                     <td className="px-4 py-3">{user.role}</td>
                     <td className="px-4 py-3">{user.assignedBranch?.name || '-'}</td>
+                    <td className="px-4 py-3">{user.paymentSummary?.successfulPaymentCount || 0}</td>
+                    <td className="px-4 py-3">₹{user.paymentSummary?.totalPaidAmount || 0}</td>
                     <td className="px-4 py-3">{user.isActive ? 'Active' : 'Inactive'}</td>
                     <td className="px-4 py-3"><button className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium" onClick={() => dispatch(updateUser({ id: user._id, payload: { isActive: !user.isActive } }))}>{user.isActive ? 'Deactivate' : 'Activate'}</button></td>
                   </tr>
