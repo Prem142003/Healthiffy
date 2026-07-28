@@ -70,3 +70,10 @@ export const validateChangePassword = (body) => {
     newPassword: body.newPassword
   };
 };
+
+export const validateDeleteAccount = (body) => {
+  assertPassword(body.currentPassword, 'Current password');
+  return {
+    currentPassword: body.currentPassword
+  };
+};

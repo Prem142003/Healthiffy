@@ -28,6 +28,7 @@ Backend required values:
 
 ```env
 MONGO_URI=
+MONGO_DB_NAME=healthiffy
 JWT_ACCESS_SECRET=
 JWT_REFRESH_SECRET=
 CLOUDINARY_CLOUD_NAME=du09ytnd5

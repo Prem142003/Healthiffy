@@ -9,8 +9,9 @@ import { addCartItem, fetchCart } from '../../redux/slices/cartSlice';
 import { branchApi } from '../../services/branchApi';
 import { categoryApi } from '../../services/categoryApi';
 import { menuItemApi } from '../../services/menuItemApi';
+import { PublicLanding } from '../public/PublicLanding';
 
-export const CustomerHome = () => {
+const AuthenticatedCustomerHome = () => {
   const dispatch = useDispatch();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const { cart } = useSelector((state) => state.cart);
@@ -128,7 +129,7 @@ export const CustomerHome = () => {
                     <Link className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium" to="/my-orders">Orders</Link>
                   </>
                 )}
-                <Link className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium" to="/change-password">Password</Link>
+                <Link className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium" to="/change-password">Account</Link>
                 <button className="rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white" onClick={() => dispatch(logoutUser())} type="button">Logout</button>
               </>
             ) : (
@@ -227,4 +228,14 @@ export const CustomerHome = () => {
       </section>
     </main>
   );
+};
+
+export const CustomerHome = () => {
+  const { isAuthenticated } = useSelector((state) => state.auth);
+
+  if (!isAuthenticated) {
+    return <PublicLanding />;
+  }
+
+  return <AuthenticatedCustomerHome />;
 };

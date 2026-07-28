@@ -1,6 +1,7 @@
 import { env } from '../config/env.config.js';
 import { PUBLIC_REGISTRATION_ROLE } from '../constants/role.constants.js';
 import { createRandomToken, hashToken } from '../helpers/token.helper.js';
+import { Cart } from '../models/Cart.model.js';
 import { RefreshToken } from '../models/RefreshToken.model.js';
 import { User } from '../models/User.model.js';
 import { AppError } from '../utils/AppError.js';
@@ -254,4 +255,17 @@ export const changePassword = async ({ userId, currentPassword, newPassword }) =
   user.password = newPassword;
   await user.save();
   await revokeAllRefreshTokensForUser(user._id);
+};
+
+export const deleteAccount = async ({ userId, currentPassword }) => {
+  const user = await User.findById(userId).select('+password');
+  if (!user || !(await user.comparePassword(currentPassword))) {
+    throw new AppError('Current password is incorrect', 400);
+  }
+
+  await Promise.all([
+    Cart.deleteMany({ user: userId }),
+    RefreshToken.deleteMany({ user: userId })
+  ]);
+  await User.deleteOne({ _id: userId });
 };

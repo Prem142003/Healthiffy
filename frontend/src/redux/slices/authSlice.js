@@ -53,6 +53,14 @@ export const logoutUser = createAsyncThunk('auth/logout', async (_, { rejectWith
   }
 });
 
+export const deleteAccount = createAsyncThunk('auth/deleteAccount', async (payload, { rejectWithValue }) => {
+  try {
+    await authApi.deleteAccount(payload);
+  } catch (error) {
+    return rejectWithValue(extractError(error));
+  }
+});
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -113,7 +121,14 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
         state.hasCheckedSession = true;
       })
-      .addCase(logoutUser.fulfilled, () => initialState);
+      .addCase(logoutUser.fulfilled, () => initialState)
+      .addCase(deleteAccount.pending, (state) => {
+        state.error = null;
+      })
+      .addCase(deleteAccount.fulfilled, () => initialState)
+      .addCase(deleteAccount.rejected, (state, action) => {
+        state.error = action.payload;
+      });
   }
 });
 

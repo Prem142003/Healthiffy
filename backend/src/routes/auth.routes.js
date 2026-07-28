@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
   authRoles,
   changeUserPassword,
+  deleteUserAccount,
   forgotPassword,
   getMe,
   login,
@@ -30,6 +31,7 @@ router.post('/reset-password', authRateLimiter, resetUserPassword);
 
 router.use(authenticate);
 router.get('/me', getMe);
+router.delete('/me', deleteUserAccount);
 router.post('/logout-all', logoutAll);
 router.patch('/change-password', changeUserPassword);
 

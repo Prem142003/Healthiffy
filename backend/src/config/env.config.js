@@ -33,6 +33,7 @@ export const env = {
   nodeEnv: process.env.NODE_ENV || 'development',
   port: process.env.PORT || 5000,
   mongoUri: firstDefined('MONGO_URI', 'MONGODB_URI'),
+  mongoDbName: process.env.MONGO_DB_NAME || undefined,
   clientUrl: firstDefined('FRONTEND_URL', 'CLIENT_URL') || 'http://localhost:5173',
   corsOrigins: (process.env.CORS_ORIGINS || '')
     .split(',')

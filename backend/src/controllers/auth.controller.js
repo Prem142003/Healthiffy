@@ -3,6 +3,7 @@ import { ROLES } from '../constants/role.constants.js';
 import { sendSuccess } from '../helpers/apiResponse.helper.js';
 import {
   validateChangePassword,
+  validateDeleteAccount,
   validateEmailToken,
   validateForgotPassword,
   validateLogin,
@@ -11,6 +12,7 @@ import {
 } from '../validators/auth.validator.js';
 import {
   changePassword,
+  deleteAccount,
   loginUser,
   refreshUserSession,
   registerCustomer,
@@ -109,6 +111,13 @@ export const changeUserPassword = catchAsync(async (req, res) => {
   await changePassword({ userId: req.user._id, ...payload });
   clearRefreshCookie(res);
   sendSuccess(res, 200, 'Password changed successfully. Please login again.');
+});
+
+export const deleteUserAccount = catchAsync(async (req, res) => {
+  const payload = validateDeleteAccount(req.body);
+  await deleteAccount({ userId: req.user._id, ...payload });
+  clearRefreshCookie(res);
+  sendSuccess(res, 200, 'Account deleted successfully');
 });
 
 export const getMe = catchAsync(async (req, res) => {
