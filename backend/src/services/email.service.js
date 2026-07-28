@@ -20,6 +20,12 @@ const getTransporter = () => {
       host: env.smtp.host,
       port: env.smtp.port,
       secure: env.smtp.secure || env.smtp.port === 465,
+      connectionTimeout: 15000,
+      greetingTimeout: 10000,
+      socketTimeout: 20000,
+      tls: {
+        minVersion: 'TLSv1.2'
+      },
       auth: {
         user: env.smtp.user,
         pass: env.smtp.pass
@@ -32,6 +38,7 @@ const getTransporter = () => {
 
 const sanitizeEmailError = (error) => ({
   message: error.message,
+  stack: error.stack,
   code: error.code,
   command: error.command,
   responseCode: error.responseCode,
@@ -67,6 +74,9 @@ export const verifyEmailTransporter = async () => {
     return true;
   } catch (error) {
     console.error('[email] SMTP transporter verification failed', sanitizeEmailError(error));
+    if (env.isProduction) {
+      throw error;
+    }
     return false;
   }
 };
@@ -102,6 +112,7 @@ export const sendEmail = async ({ to, subject, text, html }) => {
       to,
       subject,
       messageId: info.messageId,
+      response: info.response,
       accepted: info.accepted,
       rejected: info.rejected
     });

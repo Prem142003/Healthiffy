@@ -15,6 +15,8 @@ const parseBoolean = (value, fallback = false) => {
   return ['true', '1', 'yes'].includes(String(value).toLowerCase());
 };
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 const required = [
   ['MONGO_URI', 'MONGODB_URI'],
   ['JWT_ACCESS_SECRET', 'JWT_SECRET'],
@@ -29,12 +31,37 @@ for (const keys of required) {
   }
 }
 
+const productionRequired = [
+  ['FRONTEND_URL', 'CLIENT_URL'],
+  ['CORS_ORIGINS'],
+  ['SMTP_HOST', 'EMAIL_HOST', 'MAIL_HOST'],
+  ['SMTP_PORT', 'EMAIL_PORT', 'MAIL_PORT'],
+  ['SMTP_USER', 'EMAIL_USER', 'MAIL_USER'],
+  ['SMTP_PASS', 'EMAIL_PASS', 'MAIL_PASS'],
+  ['EMAIL_FROM', 'SMTP_FROM', 'MAIL_FROM']
+];
+
+if (isProduction) {
+  for (const keys of productionRequired) {
+    if (!keys.some((key) => process.env[key])) {
+      throw new Error(`Missing required production environment variable: ${keys.join(' or ')}`);
+    }
+  }
+}
+
+const smtpPort = Number(firstDefined('SMTP_PORT', 'EMAIL_PORT', 'MAIL_PORT') || 587);
+if (!Number.isInteger(smtpPort) || smtpPort <= 0) {
+  throw new Error('SMTP port must be a positive number');
+}
+
+const clientUrl = firstDefined('FRONTEND_URL', 'CLIENT_URL') || 'http://localhost:5173';
+
 export const env = {
   nodeEnv: process.env.NODE_ENV || 'development',
   port: process.env.PORT || 5000,
   mongoUri: firstDefined('MONGO_URI', 'MONGODB_URI'),
   mongoDbName: process.env.MONGO_DB_NAME || undefined,
-  clientUrl: firstDefined('FRONTEND_URL', 'CLIENT_URL') || 'http://localhost:5173',
+  clientUrl,
   corsOrigins: (process.env.CORS_ORIGINS || '')
     .split(',')
     .map((origin) => origin.trim())
@@ -47,7 +74,7 @@ export const env = {
   cookieDomain: process.env.COOKIE_DOMAIN || undefined,
   smtp: {
     host: firstDefined('SMTP_HOST', 'EMAIL_HOST', 'MAIL_HOST'),
-    port: Number(firstDefined('SMTP_PORT', 'EMAIL_PORT', 'MAIL_PORT') || 587),
+    port: smtpPort,
     secure: parseBoolean(firstDefined('SMTP_SECURE', 'EMAIL_SECURE', 'MAIL_SECURE')),
     user: firstDefined('SMTP_USER', 'EMAIL_USER', 'MAIL_USER'),
     pass: firstDefined('SMTP_PASS', 'EMAIL_PASS', 'MAIL_PASS'),
@@ -59,5 +86,5 @@ export const env = {
     apiSecret: process.env.CLOUDINARY_API_SECRET,
     folder: process.env.CLOUDINARY_FOLDER || 'healthiffy'
   },
-  isProduction: process.env.NODE_ENV === 'production'
+  isProduction
 };

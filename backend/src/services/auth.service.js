@@ -80,8 +80,10 @@ const sendVerificationEmail = async (user) => {
       userId: user._id,
       email: user.email,
       message: error.message,
+      stack: error.stack,
       code: error.code,
-      responseCode: error.responseCode
+      responseCode: error.responseCode,
+      response: error.response
     });
   }
 };
@@ -222,8 +224,10 @@ export const requestPasswordReset = async (email) => {
       userId: user._id,
       email: user.email,
       message: error.message,
+      stack: error.stack,
       code: error.code,
-      responseCode: error.responseCode
+      responseCode: error.responseCode,
+      response: error.response
     });
   }
 };
