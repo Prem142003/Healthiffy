@@ -4,23 +4,16 @@ import { sendSuccess } from '../helpers/apiResponse.helper.js';
 import {
   validateChangePassword,
   validateDeleteAccount,
-  validateEmailToken,
-  validateForgotPassword,
-  validateLogin,
-  validateRegister,
-  validateResetPassword
+  validateGoogleLogin,
+  validateLogin
 } from '../validators/auth.validator.js';
 import {
   changePassword,
   deleteAccount,
   loginUser,
-  refreshUserSession,
-  registerCustomer,
-  requestPasswordReset,
-  resendVerification,
-  resetPassword,
-  verifyEmail
+  refreshUserSession
 } from '../services/auth.service.js';
+import { loginWithGoogle } from '../services/googleAuth.service.js';
 import { revokeAllRefreshTokensForUser, revokeRefreshToken } from '../services/token.service.js';
 import { catchAsync } from '../utils/catchAsync.js';
 
@@ -45,17 +38,18 @@ const clearRefreshCookie = (res) => {
   });
 };
 
-export const register = catchAsync(async (req, res) => {
-  const payload = validateRegister(req.body);
-  const user = await registerCustomer(payload);
-  sendSuccess(res, 201, 'Registration successful. Please verify your email.', { user });
-});
-
 export const login = catchAsync(async (req, res) => {
   const payload = validateLogin(req.body);
   const { user, accessToken, refreshToken, refreshExpiresAt } = await loginUser(payload, req);
   setRefreshCookie(res, refreshToken, refreshExpiresAt);
   sendSuccess(res, 200, 'Login successful', { user, accessToken });
+});
+
+export const googleLogin = catchAsync(async (req, res) => {
+  const payload = validateGoogleLogin(req.body);
+  const { user, accessToken, refreshToken, refreshExpiresAt } = await loginWithGoogle(payload, req);
+  setRefreshCookie(res, refreshToken, refreshExpiresAt);
+  sendSuccess(res, 200, 'Google login successful', { user, accessToken });
 });
 
 export const refreshToken = catchAsync(async (req, res) => {
@@ -80,30 +74,6 @@ export const logoutAll = catchAsync(async (req, res) => {
   await revokeAllRefreshTokensForUser(req.user._id);
   clearRefreshCookie(res);
   sendSuccess(res, 200, 'Logged out from all devices');
-});
-
-export const verifyEmailAddress = catchAsync(async (req, res) => {
-  const payload = validateEmailToken(req.body);
-  const user = await verifyEmail(payload);
-  sendSuccess(res, 200, 'Email verified successfully', { user });
-});
-
-export const resendVerificationEmail = catchAsync(async (req, res) => {
-  const payload = validateForgotPassword(req.body);
-  await resendVerification(payload.email);
-  sendSuccess(res, 200, 'Verification email sent');
-});
-
-export const forgotPassword = catchAsync(async (req, res) => {
-  const payload = validateForgotPassword(req.body);
-  await requestPasswordReset(payload.email);
-  sendSuccess(res, 200, 'If an account exists, a password reset email has been sent');
-});
-
-export const resetUserPassword = catchAsync(async (req, res) => {
-  const payload = validateResetPassword(req.body);
-  await resetPassword(payload);
-  sendSuccess(res, 200, 'Password reset successful');
 });
 
 export const changeUserPassword = catchAsync(async (req, res) => {

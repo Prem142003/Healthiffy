@@ -26,8 +26,7 @@ const seedAdmin = async () => {
     name,
     email,
     password,
-    role: ROLES.ADMIN,
-    isEmailVerified: true
+    role: ROLES.ADMIN
   });
 
   console.log('Admin created:', email);

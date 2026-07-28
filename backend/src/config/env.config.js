@@ -10,13 +10,7 @@ const firstDefined = (...keys) => {
   return undefined;
 };
 
-const parseBoolean = (value, fallback = false) => {
-  if (value === undefined || value === '') return fallback;
-  return ['true', '1', 'yes'].includes(String(value).toLowerCase());
-};
-
 const isProduction = process.env.NODE_ENV === 'production';
-const emailProvider = (process.env.EMAIL_PROVIDER || (isProduction ? 'resend' : 'smtp')).toLowerCase();
 
 const required = [
   ['MONGO_URI', 'MONGODB_URI'],
@@ -35,19 +29,8 @@ for (const keys of required) {
 const productionRequired = [
   ['FRONTEND_URL', 'CLIENT_URL'],
   ['CORS_ORIGINS'],
-  ['EMAIL_FROM', 'SMTP_FROM', 'MAIL_FROM']
+  ['GOOGLE_CLIENT_ID']
 ];
-
-if (emailProvider === 'resend') {
-  productionRequired.push(['RESEND_API_KEY']);
-} else {
-  productionRequired.push(
-    ['SMTP_HOST', 'EMAIL_HOST', 'MAIL_HOST'],
-    ['SMTP_PORT', 'EMAIL_PORT', 'MAIL_PORT'],
-    ['SMTP_USER', 'EMAIL_USER', 'MAIL_USER'],
-    ['SMTP_PASS', 'EMAIL_PASS', 'MAIL_PASS']
-  );
-}
 
 if (isProduction) {
   for (const keys of productionRequired) {
@@ -55,11 +38,6 @@ if (isProduction) {
       throw new Error(`Missing required production environment variable: ${keys.join(' or ')}`);
     }
   }
-}
-
-const smtpPort = Number(firstDefined('SMTP_PORT', 'EMAIL_PORT', 'MAIL_PORT') || 587);
-if (!Number.isInteger(smtpPort) || smtpPort <= 0) {
-  throw new Error('SMTP port must be a positive number');
 }
 
 const clientUrl = firstDefined('FRONTEND_URL', 'CLIENT_URL') || 'http://localhost:5173';
@@ -80,19 +58,7 @@ export const env = {
   jwtRefreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN,
   refreshCookieName: process.env.REFRESH_COOKIE_NAME || 'hf_refresh_token',
   cookieDomain: process.env.COOKIE_DOMAIN || undefined,
-  emailProvider,
-  resend: {
-    apiKey: process.env.RESEND_API_KEY,
-    apiUrl: process.env.RESEND_API_URL || 'https://api.resend.com/emails'
-  },
-  smtp: {
-    host: firstDefined('SMTP_HOST', 'EMAIL_HOST', 'MAIL_HOST'),
-    port: smtpPort,
-    secure: parseBoolean(firstDefined('SMTP_SECURE', 'EMAIL_SECURE', 'MAIL_SECURE')),
-    user: firstDefined('SMTP_USER', 'EMAIL_USER', 'MAIL_USER'),
-    pass: firstDefined('SMTP_PASS', 'EMAIL_PASS', 'MAIL_PASS'),
-    from: firstDefined('EMAIL_FROM', 'SMTP_FROM', 'MAIL_FROM') || 'Healthiffy <no-reply@healthiffy.example>'
-  },
+  googleClientId: process.env.GOOGLE_CLIENT_ID,
   cloudinary: {
     cloudName: process.env.CLOUDINARY_CLOUD_NAME,
     apiKey: process.env.CLOUDINARY_API_KEY,

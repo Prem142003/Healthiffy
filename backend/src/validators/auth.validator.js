@@ -23,42 +23,15 @@ const normalizeEmail = (email) => {
   return normalized;
 };
 
-export const validateRegister = (body) => {
-  assertRequiredString(body.name, 'Name');
-  assertPassword(body.password);
-
-  return {
-    name: body.name.trim(),
-    email: normalizeEmail(body.email),
-    phone: body.phone?.trim(),
-    password: body.password
-  };
-};
-
 export const validateLogin = (body) => ({
   email: normalizeEmail(body.email),
   password: body.password
 });
 
-export const validateEmailToken = (body) => {
-  assertRequiredString(body.token, 'Token');
+export const validateGoogleLogin = (body) => {
+  assertRequiredString(body.credential, 'Google credential');
   return {
-    email: normalizeEmail(body.email),
-    token: body.token
-  };
-};
-
-export const validateForgotPassword = (body) => ({
-  email: normalizeEmail(body.email)
-});
-
-export const validateResetPassword = (body) => {
-  assertPassword(body.password);
-  assertRequiredString(body.token, 'Token');
-  return {
-    email: normalizeEmail(body.email),
-    token: body.token,
-    password: body.password
+    credential: body.credential.trim()
   };
 };
 
@@ -71,9 +44,6 @@ export const validateChangePassword = (body) => {
   };
 };
 
-export const validateDeleteAccount = (body) => {
-  assertPassword(body.currentPassword, 'Current password');
-  return {
-    currentPassword: body.currentPassword
-  };
-};
+export const validateDeleteAccount = (body) => ({
+  currentPassword: typeof body.currentPassword === 'string' ? body.currentPassword : ''
+});

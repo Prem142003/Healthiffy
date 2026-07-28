@@ -175,7 +175,7 @@ const StoryCopy = ({ progress }) => {
             </a>
           )}
           {index === 1 && (
-            <Link className="harvest-text-link" to="/register">Build your bowl <span aria-hidden="true">→</span></Link>
+            <Link className="harvest-text-link" to="/login">Build your bowl <span aria-hidden="true">→</span></Link>
           )}
         </div>
       ))}
@@ -248,7 +248,7 @@ const BlenderLoop = () => {
         <p className="harvest-eyebrow">02 — THE BLEND</p>
         <h2>Same fresh ingredients.<br /><em>Blended, not chopped.</em></h2>
         <p>Whole fruit, leafy greens and creamy yogurt tumble together in a cold, bright loop—blended only when you ask.</p>
-        <Link className="harvest-button harvest-button--primary" to="/register">Blend your own <span aria-hidden="true">↗</span></Link>
+        <Link className="harvest-button harvest-button--primary" to="/login">Blend your own <span aria-hidden="true">↗</span></Link>
       </div>
     </section>
   );
@@ -345,7 +345,7 @@ export const PublicLanding = () => {
           <a href="#menu" onClick={() => setMenuOpen(false)}>Menu</a>
           <a href="#location" onClick={() => setMenuOpen(false)}>Location</a>
           <Link to="/login">Log in</Link>
-          <Link className="harvest-button harvest-button--small" to="/register">Order now <span aria-hidden="true">↗</span></Link>
+          <Link className="harvest-button harvest-button--small" to="/login">Order now <span aria-hidden="true">↗</span></Link>
         </nav>
       </header>
 
@@ -482,7 +482,7 @@ export const PublicLanding = () => {
             </article>
           ))}
         </div>
-        <Link className="harvest-button harvest-button--dark" to="/register">Start an order <span aria-hidden="true">↗</span></Link>
+        <Link className="harvest-button harvest-button--dark" to="/login">Start an order <span aria-hidden="true">↗</span></Link>
       </section>
 
       <section className="harvest-location" id="location">
@@ -497,7 +497,7 @@ export const PublicLanding = () => {
           <p className="harvest-eyebrow">COME SAY HI</p>
           <h2>Fresh tastes better<br />around the corner.</h2>
           <p className="harvest-location__address">Healthiffy Kitchen<br />Your nearest neighborhood branch</p>
-          <Link className="harvest-text-link" to="/register">Find your branch <span aria-hidden="true">→</span></Link>
+          <Link className="harvest-text-link" to="/login">Find your branch <span aria-hidden="true">→</span></Link>
         </div>
       </section>
 

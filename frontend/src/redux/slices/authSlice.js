@@ -13,9 +13,9 @@ const initialState = {
 const extractData = (response) => response.data.data;
 const extractError = (error) => error.response?.data?.message || 'Something went wrong';
 
-export const registerUser = createAsyncThunk('auth/register', async (payload, { rejectWithValue }) => {
+export const googleLoginUser = createAsyncThunk('auth/googleLogin', async (payload, { rejectWithValue }) => {
   try {
-    return extractData(await authApi.register(payload));
+    return extractData(await authApi.googleLogin(payload));
   } catch (error) {
     return rejectWithValue(extractError(error));
   }
@@ -72,14 +72,18 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(registerUser.pending, (state) => {
+      .addCase(googleLoginUser.pending, (state) => {
         state.status = 'loading';
         state.error = null;
       })
-      .addCase(registerUser.fulfilled, (state) => {
+      .addCase(googleLoginUser.fulfilled, (state, action) => {
         state.status = 'succeeded';
+        state.user = action.payload.user;
+        state.accessToken = action.payload.accessToken;
+        state.isAuthenticated = true;
+        state.hasCheckedSession = true;
       })
-      .addCase(registerUser.rejected, (state, action) => {
+      .addCase(googleLoginUser.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload;
       })

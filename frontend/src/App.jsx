@@ -4,11 +4,8 @@ import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminLayout } from './pages/admin/AdminLayout';
 import { AdminSettings } from './pages/admin/AdminSettings';
 import { ChangePassword } from './pages/auth/ChangePassword';
-import { ForgotPassword } from './pages/auth/ForgotPassword';
 import { Login } from './pages/auth/Login';
-import { Register } from './pages/auth/Register';
-import { ResetPassword } from './pages/auth/ResetPassword';
-import { VerifyEmail } from './pages/auth/VerifyEmail';
+import { StaffLogin } from './pages/auth/StaffLogin';
 import { Branches } from './pages/admin/Branches';
 import { Categories } from './pages/admin/Categories';
 import { MenuItems } from './pages/admin/MenuItems';
@@ -32,17 +29,16 @@ export const App = () => (
     <Route path="/" element={<CustomerHome />} />
     <Route element={<AuthShell />}>
       <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/verify-email" element={<VerifyEmail />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/staff-login" element={<StaffLogin />} />
     </Route>
     <Route element={<ProtectedRoute />}>
-      <Route path="/change-password" element={<ChangePassword />} />
       <Route path="/checkout" element={<Checkout />} />
       <Route path="/my-orders" element={<MyOrders />} />
       <Route path="/orders/:orderId/track" element={<OrderTracking />} />
       <Route path="/payment/:orderId" element={<Payment />} />
+      <Route element={<RoleRoute allowedRoles={['ADMIN', 'WORKER']} />}>
+        <Route path="/change-password" element={<ChangePassword />} />
+      </Route>
       <Route element={<RoleRoute allowedRoles={['ADMIN']} />}>
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />

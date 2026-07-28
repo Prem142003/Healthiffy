@@ -25,9 +25,22 @@ const userSchema = new mongoose.Schema(
       trim: true,
       maxlength: 20
     },
+    avatar: {
+      type: String,
+      trim: true
+    },
+    googleId: {
+      type: String,
+      trim: true,
+      unique: true,
+      sparse: true,
+      index: true
+    },
     password: {
       type: String,
-      required: [true, 'Password is required'],
+      required() {
+        return !this.googleId;
+      },
       minlength: 8,
       select: false
     },
@@ -45,14 +58,6 @@ const userSchema = new mongoose.Schema(
       },
       index: true
     },
-    isEmailVerified: {
-      type: Boolean,
-      default: false
-    },
-    emailVerificationToken: String,
-    emailVerificationExpires: Date,
-    passwordResetToken: String,
-    passwordResetExpires: Date,
     isActive: {
       type: Boolean,
       default: true,

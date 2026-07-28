@@ -10,7 +10,6 @@
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "seed:admin": "node src/database/seedAdmin.js",
-    "verify:email": "node src/scripts/verifyEmail.js",
     "test": "node --test"
   },
   "dependencies": {
@@ -23,13 +22,13 @@
     "express": "^4.18.3",
     "express-mongo-sanitize": "^2.2.0",
     "express-rate-limit": "^7.2.0",
+    "google-auth-library": "^10.9.1",
     "helmet": "^7.1.0",
     "hpp": "^0.2.3",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.2.1",
     "morgan": "^1.10.0",
     "multer": "^2.2.0",
-    "nodemailer": "^9.0.3",
     "socket.io": "^4.7.5",
     "validator": "^13.11.0",
     "xss-clean": "^0.1.4"

@@ -133,17 +133,14 @@ PORT=5000
 MONGO_URI=
 CORS_ORIGINS=https://your-frontend.vercel.app
 CLIENT_URL=https://your-frontend.vercel.app
+FRONTEND_URL=https://your-frontend.vercel.app
+GOOGLE_CLIENT_ID=your-google-oauth-client-id.apps.googleusercontent.com
 JWT_ACCESS_SECRET=
 JWT_REFRESH_SECRET=
 JWT_ACCESS_EXPIRES_IN=15m
 JWT_REFRESH_EXPIRES_IN=7d
 REFRESH_COOKIE_NAME=hf_refresh_token
 COOKIE_DOMAIN=
-SMTP_HOST=
-SMTP_PORT=587
-SMTP_USER=
-SMTP_PASS=
-EMAIL_FROM=
 CLOUDINARY_CLOUD_NAME=du09ytnd5
 CLOUDINARY_API_KEY=
 CLOUDINARY_API_SECRET=
@@ -157,6 +154,7 @@ Vercel environment variables:
 ```env
 VITE_API_BASE_URL=https://your-backend.onrender.com/api/v1
 VITE_SOCKET_URL=https://your-backend.onrender.com
+VITE_GOOGLE_CLIENT_ID=your-google-oauth-client-id.apps.googleusercontent.com
 ```
 
 ## Important Routes

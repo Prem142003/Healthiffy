@@ -129,13 +129,15 @@ const AuthenticatedCustomerHome = () => {
                     <Link className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium" to="/my-orders">Orders</Link>
                   </>
                 )}
-                <Link className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium" to="/change-password">Account</Link>
+                {user?.role !== 'CUSTOMER' && (
+                  <Link className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium" to="/change-password">Account</Link>
+                )}
                 <button className="rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white" onClick={() => dispatch(logoutUser())} type="button">Logout</button>
               </>
             ) : (
               <>
                 <Link className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium" to="/login">Login</Link>
-                <Link className="rounded-md bg-emerald-700 px-3 py-2 text-sm font-medium text-white" to="/register">Register</Link>
+                <Link className="rounded-md bg-emerald-700 px-3 py-2 text-sm font-medium text-white" to="/login">Order now</Link>
               </>
             )}
           </nav>
