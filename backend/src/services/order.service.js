@@ -16,7 +16,10 @@ const populateOrder = (query) =>
   query
     .populate('customer', 'name email phone')
     .populate('branch', 'name slug')
-    .populate('payment', 'status method transactionReference screenshot paymentTime verifiedBy verifiedAt')
+    .populate(
+      'payment',
+      'status method provider transactionReference screenshot paymentTime verifiedBy verifiedAt cashfreePaymentGroup gatewayStatus'
+    )
     .populate('items.menuItem', 'name slug');
 
 const getAssignedBranchId = (worker) => worker.assignedBranch?._id || worker.assignedBranch;

@@ -6,6 +6,8 @@ import { fetchMyOrders } from '../../redux/slices/orderSlice';
 export const MyOrders = () => {
   const dispatch = useDispatch();
   const { orders, status, error } = useSelector((state) => state.orders);
+  const { user } = useSelector((state) => state.auth);
+  const paymentSummary = user?.paymentSummary;
 
   useEffect(() => {
     dispatch(fetchMyOrders({ limit: 50 }));
@@ -23,6 +25,25 @@ export const MyOrders = () => {
         </div>
 
         {error && <p className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+
+        <div className="mb-6 grid gap-3 sm:grid-cols-3">
+          <div className="rounded-lg border border-slate-200 bg-white p-4">
+            <div className="text-xs font-medium uppercase text-slate-500">Confirmed payments</div>
+            <div className="mt-1 text-xl font-semibold text-slate-950">{paymentSummary?.successfulPaymentCount || 0}</div>
+          </div>
+          <div className="rounded-lg border border-slate-200 bg-white p-4">
+            <div className="text-xs font-medium uppercase text-slate-500">Lifetime paid</div>
+            <div className="mt-1 text-xl font-semibold text-slate-950">₹{paymentSummary?.totalPaidAmount || 0}</div>
+          </div>
+          <div className="rounded-lg border border-slate-200 bg-white p-4">
+            <div className="text-xs font-medium uppercase text-slate-500">Last payment</div>
+            <div className="mt-1 text-sm font-semibold text-slate-950">
+              {paymentSummary?.lastPaymentAt
+                ? new Date(paymentSummary.lastPaymentAt).toLocaleString()
+                : 'No confirmed payment'}
+            </div>
+          </div>
+        </div>
 
         {status === 'loading' ? (
           <p className="rounded-lg border border-slate-200 bg-white p-5 text-sm text-slate-600">Loading orders...</p>

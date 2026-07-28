@@ -26,9 +26,12 @@ import { Unauthorized } from './pages/Unauthorized';
 import { WorkerDashboard } from './pages/worker/WorkerDashboard';
 import { ProtectedRoute } from './routes/ProtectedRoute';
 import { RoleRoute } from './routes/RoleRoute';
+import { PaymentConfirmationListener } from './components/common/PaymentConfirmationListener';
 
 export const App = () => (
-  <Routes>
+  <>
+    <PaymentConfirmationListener />
+    <Routes>
     <Route path="/" element={<CustomerHome />} />
     <Route element={<AuthShell />}>
       <Route path="/login" element={<Login />} />
@@ -62,5 +65,6 @@ export const App = () => (
       </Route>
     </Route>
     <Route path="/unauthorized" element={<Unauthorized />} />
-  </Routes>
+    </Routes>
+  </>
 );

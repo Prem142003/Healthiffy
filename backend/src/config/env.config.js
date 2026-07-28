@@ -59,5 +59,12 @@ export const env = {
     apiSecret: process.env.CLOUDINARY_API_SECRET,
     folder: process.env.CLOUDINARY_FOLDER || 'healthiffy'
   },
+  cashfree: {
+    environment: (process.env.CASHFREE_ENV || 'sandbox').toLowerCase(),
+    appId: process.env.CASHFREE_APP_ID,
+    secretKey: process.env.CASHFREE_SECRET_KEY,
+    apiVersion: process.env.CASHFREE_API_VERSION || '2025-01-01',
+    webhookUrl: process.env.CASHFREE_WEBHOOK_URL || undefined
+  },
   isProduction: process.env.NODE_ENV === 'production'
 };

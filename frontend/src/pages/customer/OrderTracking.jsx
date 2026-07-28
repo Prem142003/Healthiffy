@@ -6,7 +6,7 @@ import { getSocket } from '../../services/socket';
 
 export const OrderTracking = () => {
   const { orderId } = useParams();
-  const { user } = useSelector((state) => state.auth);
+  const { user, accessToken } = useSelector((state) => state.auth);
   const [order, setOrder] = useState(null);
   const [error, setError] = useState('');
 
@@ -23,10 +23,9 @@ export const OrderTracking = () => {
   }, [orderId]);
 
   useEffect(() => {
-    if (!user?._id) return undefined;
-    const socket = getSocket();
-    socket.connect();
-    socket.emit('join:user', user._id);
+    if (!user?._id || !accessToken) return undefined;
+    const socket = getSocket(accessToken);
+    if (!socket.connected) socket.connect();
 
     const handleOrderUpdated = (updatedOrder) => {
       if (updatedOrder._id === orderId) setOrder(updatedOrder);
@@ -34,9 +33,27 @@ export const OrderTracking = () => {
 
     socket.on('order:status-updated', handleOrderUpdated);
     return () => socket.off('order:status-updated', handleOrderUpdated);
-  }, [orderId, user?._id]);
+  }, [accessToken, orderId, user?._id]);
 
   const isVerified = ['VERIFIED', 'PAID'].includes(order?.paymentStatus);
+  const isProcessing = order?.paymentStatus === 'PROCESSING';
+  const isRejected = order?.paymentStatus === 'REJECTED';
+
+  const statusTitle = isVerified
+    ? 'Payment Confirmed'
+    : isProcessing
+      ? 'Payment Processing'
+      : isRejected
+        ? 'Payment Not Completed'
+        : 'Payment Pending Verification';
+
+  const statusMessage = isVerified
+    ? 'Thank you! Your order has been confirmed. Enjoy your order!'
+    : isProcessing
+      ? 'Cashfree is processing your payment. The final status will update after server verification.'
+      : isRejected
+        ? 'The latest payment attempt was not successful. You can return to payment and try again.'
+        : 'Thanks. A worker from your branch will verify your manual UPI payment shortly.';
 
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-8">
@@ -52,12 +69,13 @@ export const OrderTracking = () => {
         {order && (
           <div className="space-y-5">
             <div className={isVerified ? 'rounded-lg bg-emerald-50 p-5 text-emerald-800' : 'rounded-lg bg-amber-50 p-5 text-amber-800'}>
-              <div className="text-xl font-semibold">{isVerified ? 'Payment Verified' : 'Payment Pending Verification'}</div>
-              <p className="mt-2 text-sm">
-                {isVerified
-                  ? 'Thank you! Your order has been confirmed. Enjoy your order!'
-                  : 'Thanks. A worker from your branch will verify your UPI payment shortly.'}
-              </p>
+              <div className="text-xl font-semibold">{statusTitle}</div>
+              <p className="mt-2 text-sm">{statusMessage}</p>
+              {isRejected && (
+                <Link className="mt-4 inline-flex rounded-md bg-amber-800 px-4 py-2 text-sm font-medium text-white" to={`/payment/${orderId}`}>
+                  Try payment again
+                </Link>
+              )}
             </div>
             <div className="rounded-lg border border-slate-200 p-4">
               <div className="text-sm text-slate-500">Payment Status</div>

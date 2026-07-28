@@ -65,6 +65,7 @@ const paymentSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: [
+        PAYMENT_STATUS.PROCESSING,
         PAYMENT_STATUS.PENDING_VERIFICATION,
         PAYMENT_STATUS.VERIFIED,
         PAYMENT_STATUS.PAID,
@@ -83,6 +84,33 @@ const paymentSchema = new mongoose.Schema(
       type: String,
       trim: true,
       maxlength: 300
+    },
+    cashfreeOrderId: {
+      type: String,
+      trim: true,
+      index: true,
+      sparse: true
+    },
+    cashfreeOrderIds: {
+      type: [String],
+      default: undefined,
+      index: true
+    },
+    cashfreePaymentId: {
+      type: String,
+      trim: true
+    },
+    cashfreePaymentGroup: {
+      type: String,
+      trim: true
+    },
+    gatewayStatus: {
+      type: String,
+      trim: true
+    },
+    gatewayErrorCode: {
+      type: String,
+      trim: true
     }
   },
   { timestamps: true }

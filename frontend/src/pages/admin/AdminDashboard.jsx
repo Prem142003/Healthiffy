@@ -39,6 +39,12 @@ export const AdminDashboard = () => {
     dispatch(fetchDashboardAnalytics());
   }, [dispatch]);
 
+  useEffect(() => {
+    const refreshAnalytics = () => dispatch(fetchDashboardAnalytics());
+    window.addEventListener('healthiffy:payment-confirmed', refreshAnalytics);
+    return () => window.removeEventListener('healthiffy:payment-confirmed', refreshAnalytics);
+  }, [dispatch]);
+
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-8">
       <section className="mx-auto max-w-7xl">

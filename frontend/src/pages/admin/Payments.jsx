@@ -28,6 +28,20 @@ export const Payments = () => {
     }));
   }, [dispatch, filters]);
 
+  useEffect(() => {
+    const refreshPayments = () => {
+      dispatch(fetchPayments({
+        date: filters.date || undefined,
+        branch: filters.branch || undefined,
+        worker: filters.worker || undefined,
+        status: filters.status || undefined,
+        limit: 100
+      }));
+    };
+    window.addEventListener('healthiffy:payment-confirmed', refreshPayments);
+    return () => window.removeEventListener('healthiffy:payment-confirmed', refreshPayments);
+  }, [dispatch, filters]);
+
   const setFilter = (key, value) => {
     setFilters((current) => ({ ...current, [key]: value }));
   };
@@ -52,9 +66,10 @@ export const Payments = () => {
             </select>
             <select className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm" value={filters.status} onChange={(event) => setFilter('status', event.target.value)}>
               <option value="">All statuses</option>
+              <option value="PROCESSING">Processing</option>
               <option value="PENDING_VERIFICATION">Pending verification</option>
               <option value="VERIFIED">Verified</option>
-              <option value="PAID">Paid (legacy)</option>
+              <option value="PAID">Paid</option>
               <option value="REJECTED">Rejected</option>
             </select>
           </div>

@@ -58,7 +58,29 @@ const userSchema = new mongoose.Schema(
       default: true,
       index: true
     },
-    lastLoginAt: Date
+    lastLoginAt: Date,
+    paymentSummary: {
+      successfulPaymentCount: {
+        type: Number,
+        default: 0,
+        min: 0
+      },
+      totalPaidAmount: {
+        type: Number,
+        default: 0,
+        min: 0
+      },
+      lastPaymentAt: Date,
+      lastPaidOrder: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Order'
+      },
+      creditedPayments: {
+        type: [mongoose.Schema.Types.ObjectId],
+        select: false,
+        default: undefined
+      }
+    }
   },
   { timestamps: true }
 );

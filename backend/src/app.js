@@ -29,7 +29,16 @@ app.set('trust proxy', 1);
 app.use(helmet());
 app.use(cors(corsOptions));
 app.use(compression());
-app.use(express.json({ limit: '10kb' }));
+app.use(
+  express.json({
+    limit: '10kb',
+    verify: (req, _res, buffer) => {
+      if (req.originalUrl.startsWith('/api/v1/payments/webhooks/cashfree')) {
+        req.rawBody = buffer.toString('utf8');
+      }
+    }
+  })
+);
 app.use(cookieParser());
 app.use(mongoSanitize());
 app.use(xss());

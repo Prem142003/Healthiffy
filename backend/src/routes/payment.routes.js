@@ -1,11 +1,14 @@
 import { Router } from 'express';
 import { ROLES } from '../constants/role.constants.js';
 import {
+  cashfreeWebhookHandler,
+  createCashfreePaymentSessionHandler,
   getPublicPaymentSettingsHandler,
   listPaymentsHandler,
   rejectPaymentHandler,
   submitManualPaymentHandler,
   updatePaymentSettingsHandler,
+  verifyCashfreePaymentHandler,
   verifyPaymentHandler
 } from '../controllers/payment.controller.js';
 import { authenticate } from '../middlewares/auth.middleware.js';
@@ -16,8 +19,21 @@ const adminOnly = [authenticate, authorizeRoles(ROLES.ADMIN)];
 const adminOrWorker = [authenticate, authorizeRoles(ROLES.ADMIN, ROLES.WORKER)];
 const workerOnly = [authenticate, authorizeRoles(ROLES.WORKER)];
 
+router.post('/webhooks/cashfree', cashfreeWebhookHandler);
 router.get('/settings/public', getPublicPaymentSettingsHandler);
 router.patch('/settings', adminOnly, updatePaymentSettingsHandler);
+router.post(
+  '/orders/:orderId/cashfree/session',
+  authenticate,
+  authorizeRoles(ROLES.CUSTOMER, ROLES.ADMIN),
+  createCashfreePaymentSessionHandler
+);
+router.get(
+  '/orders/:orderId/cashfree/status',
+  authenticate,
+  authorizeRoles(ROLES.CUSTOMER, ROLES.ADMIN),
+  verifyCashfreePaymentHandler
+);
 router.post('/orders/:orderId/manual-confirm', authenticate, authorizeRoles(ROLES.CUSTOMER, ROLES.ADMIN), submitManualPaymentHandler);
 router.get('/', adminOrWorker, listPaymentsHandler);
 router.patch('/:id/verify', workerOnly, verifyPaymentHandler);
