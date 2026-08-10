@@ -127,6 +127,8 @@ const AuthenticatedCustomerHome = () => {
                   <>
                     <Link className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium" to="/checkout">Cart {cart?.items?.length ? `(${cart.items.length})` : ''}</Link>
                     <Link className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium" to="/my-orders">Orders</Link>
+                    <Link className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium" to="/monthly-plans">Monthly Plans</Link>
+                    <Link className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium" to="/my-subscription">My Subscription</Link>
                   </>
                 )}
                 {user?.role !== 'CUSTOMER' && (

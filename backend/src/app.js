@@ -21,6 +21,7 @@ import paymentRoutes from './routes/payment.routes.js';
 import userRoutes from './routes/user.routes.js';
 import uploadRoutes from './routes/upload.routes.js';
 import workerRoutes from './routes/worker.routes.js';
+import subscriptionRoutes from './routes/subscription.routes.js';
 import { cashfreeWebhookHandler } from './controllers/payment.controller.js';
 
 export const app = express();
@@ -57,6 +58,7 @@ app.use('/api/v1/categories', categoryRoutes);
 app.use('/api/v1/menu-items', menuItemRoutes);
 app.use('/api/v1/orders', orderRoutes);
 app.use('/api/v1/payments', paymentRoutes);
+app.use('/api/v1/subscriptions', subscriptionRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/uploads', uploadRoutes);
 app.use('/api/v1/worker', workerRoutes);

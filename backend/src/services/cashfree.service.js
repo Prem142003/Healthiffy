@@ -102,6 +102,36 @@ export const createCashfreeOrder = (payload, idempotencyKey) =>
     idempotencyKey
   });
 
+export const createHealthiffyCheckoutOrder = (
+  { cashfreeOrderId, amount, customer, customerPhone, note },
+  idempotencyKey
+) =>
+  createCashfreeOrder(
+    {
+      order_id: cashfreeOrderId,
+      order_amount: Number(Number(amount).toFixed(2)),
+      order_currency: 'INR',
+      customer_details: {
+        customer_id: customer._id.toString(),
+        customer_phone: customerPhone,
+        customer_email: customer.email,
+        customer_name: customer.name
+      },
+      order_meta: {
+        payment_methods: 'upi,cc,dc',
+        ...(env.cashfree.webhookUrl ? { notify_url: env.cashfree.webhookUrl } : {})
+      },
+      payment_methods_filters: {
+        methods: {
+          action: 'ALLOW',
+          values: ['upi', 'credit_card', 'debit_card', 'prepaid_card']
+        }
+      },
+      order_note: note
+    },
+    idempotencyKey
+  );
+
 export const fetchCashfreeOrder = (cashfreeOrderId) =>
   cashfreeRequest(`/orders/${encodeURIComponent(cashfreeOrderId)}`);
 

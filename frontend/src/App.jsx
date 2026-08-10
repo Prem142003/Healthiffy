@@ -16,11 +16,17 @@ import { PaymentSettings } from './pages/admin/PaymentSettings';
 import { Payments } from './pages/admin/Payments';
 import { Users } from './pages/admin/Users';
 import { Workers } from './pages/admin/Workers';
+import { SubscriptionPlans } from './pages/admin/SubscriptionPlans';
+import { MonthlyCustomers } from './pages/admin/MonthlyCustomers';
+import { SubscriptionDeliveries } from './pages/admin/SubscriptionDeliveries';
+import { SubscriptionAnalytics } from './pages/admin/SubscriptionAnalytics';
 import { CustomerHome } from './pages/customer/CustomerHome';
 import { Checkout } from './pages/customer/Checkout';
 import { MyOrders } from './pages/customer/MyOrders';
 import { OrderTracking } from './pages/customer/OrderTracking';
 import { Payment } from './pages/customer/Payment';
+import { MonthlyPlans } from './pages/customer/MonthlyPlans';
+import { MySubscription } from './pages/customer/MySubscription';
 import { Unauthorized } from './pages/Unauthorized';
 import { WorkerDashboard } from './pages/worker/WorkerDashboard';
 import { ProtectedRoute } from './routes/ProtectedRoute';
@@ -41,6 +47,10 @@ export const App = () => (
       <Route path="/my-orders" element={<MyOrders />} />
       <Route path="/orders/:orderId/track" element={<OrderTracking />} />
       <Route path="/payment/:orderId" element={<Payment />} />
+      <Route element={<RoleRoute allowedRoles={['CUSTOMER']} />}>
+        <Route path="/monthly-plans" element={<MonthlyPlans />} />
+        <Route path="/my-subscription" element={<MySubscription />} />
+      </Route>
       <Route element={<RoleRoute allowedRoles={['ADMIN', 'WORKER']} />}>
         <Route path="/change-password" element={<ChangePassword />} />
       </Route>
@@ -50,6 +60,10 @@ export const App = () => (
           <Route path="branches" element={<Branches />} />
           <Route path="categories" element={<Categories />} />
           <Route path="menu" element={<MenuItems />} />
+          <Route path="subscription-plans" element={<SubscriptionPlans />} />
+          <Route path="monthly-customers" element={<MonthlyCustomers />} />
+          <Route path="subscription-deliveries" element={<SubscriptionDeliveries />} />
+          <Route path="subscription-analytics" element={<SubscriptionAnalytics />} />
           <Route path="orders" element={<Orders />} />
           <Route path="payment-settings" element={<PaymentSettings />} />
           <Route path="payments" element={<Payments />} />

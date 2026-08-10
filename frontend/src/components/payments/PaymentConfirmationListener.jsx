@@ -39,11 +39,25 @@ export const PaymentConfirmationListener = () => {
       );
     };
 
+    const handleSubscriptionActivated = () => {
+      toast.success(user.role === 'CUSTOMER' ? 'Your monthly subscription is active.' : 'A monthly subscription was activated.');
+      window.dispatchEvent(new CustomEvent('healthiffy:subscription-updated'));
+    };
+
+    const handleSubscriptionDelivered = () => {
+      if (user.role === 'CUSTOMER') toast.success("Today's meal was marked delivered.");
+      window.dispatchEvent(new CustomEvent('healthiffy:subscription-updated'));
+    };
+
     socket.on('payment:confirmed', handleConfirmation);
+    socket.on('subscription:activated', handleSubscriptionActivated);
+    socket.on('subscription:delivered', handleSubscriptionDelivered);
     socket.connect();
 
     return () => {
       socket.off('payment:confirmed', handleConfirmation);
+      socket.off('subscription:activated', handleSubscriptionActivated);
+      socket.off('subscription:delivered', handleSubscriptionDelivered);
     };
   }, [accessToken, dispatch, user?._id, user?.role]);
 

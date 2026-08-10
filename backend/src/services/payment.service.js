@@ -12,12 +12,11 @@ import { getOrderById } from './order.service.js';
 import { emitOrderUpdated } from '../sockets/socket.server.js';
 import { AppError } from '../utils/AppError.js';
 import {
-  createCashfreeOrder,
+  createHealthiffyCheckoutOrder,
   fetchCashfreeOrder,
   getCashfreePublicSettings
 } from './cashfree.service.js';
 import { confirmPayment } from './paymentConfirmation.service.js';
-import { env } from '../config/env.config.js';
 
 const getAssignedBranchId = (user) => user.assignedBranch?._id || user.assignedBranch;
 
@@ -162,32 +161,13 @@ export const createCashfreeSession = async ({ orderId, user, customerPhone }) =>
   }
 
   const cashfreeOrderId = cashfreeOrderIdFor(order._id);
-  const orderMeta = {
-    payment_methods: 'upi,cc,dc',
-    ...(env.cashfree.webhookUrl
-      ? { notify_url: env.cashfree.webhookUrl }
-      : {})
-  };
-
-  const cashfreeOrder = await createCashfreeOrder(
+  const cashfreeOrder = await createHealthiffyCheckoutOrder(
     {
-      order_id: cashfreeOrderId,
-      order_amount: Number(order.totalAmount.toFixed(2)),
-      order_currency: 'INR',
-      customer_details: {
-        customer_id: order.customer._id.toString(),
-        customer_phone: phone,
-        customer_email: order.customer.email,
-        customer_name: order.customer.name
-      },
-      order_meta: orderMeta,
-      payment_methods_filters: {
-        methods: {
-          action: 'ALLOW',
-          values: ['upi', 'credit_card', 'debit_card', 'prepaid_card']
-        }
-      },
-      order_note: `Healthiffy order ${order.orderNumber}`
+      cashfreeOrderId,
+      amount: order.totalAmount,
+      customer: order.customer,
+      customerPhone: phone,
+      note: `Healthiffy order ${order.orderNumber}`
     },
     `healthiffy:${cashfreeOrderId}`
   );

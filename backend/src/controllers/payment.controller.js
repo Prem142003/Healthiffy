@@ -97,25 +97,17 @@ export const cashfreeWebhookHandler = async (req, res, next) => {
       cashfreeOrderId: payload.data.order.order_id
     });
 
-    res.status(200).json({
-      success: true,
-      message: duplicate ? 'Webhook already received' : 'Webhook accepted'
-    });
-
     if (!duplicate && event) {
-      setImmediate(() => {
-        processCashfreeWebhook({
-          eventId: event._id,
-          payload
-        }).catch((error) => {
-          console.error('[cashfree] Webhook task failed', {
-            eventId: event._id.toString(),
-            message: error.message,
-            code: error.code
-          });
-        });
+      await processCashfreeWebhook({
+        eventId: event._id,
+        payload
       });
     }
+
+    res.status(200).json({
+      success: true,
+      message: duplicate ? 'Webhook already received' : 'Webhook processed'
+    });
   } catch (error) {
     next(error);
   }

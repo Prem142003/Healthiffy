@@ -9,10 +9,15 @@ import { PAYMENT_STATUS } from '../constants/order.constants.js';
 import { CashfreeWebhookEvent } from '../models/CashfreeWebhookEvent.model.js';
 import { Order } from '../models/Order.model.js';
 import { Payment } from '../models/Payment.model.js';
+import { SubscriptionPurchase } from '../models/SubscriptionPurchase.model.js';
 import { emitOrderUpdated } from '../sockets/socket.server.js';
 import { fetchCashfreeOrder } from './cashfree.service.js';
 import { confirmPayment } from './paymentConfirmation.service.js';
 import { getOrderById } from './order.service.js';
+import {
+  confirmSubscriptionPurchase,
+  markSubscriptionPurchaseUnsuccessful
+} from './subscriptionPurchase.service.js';
 
 export const registerCashfreeWebhook = async ({
   eventKey,
@@ -154,6 +159,31 @@ const processPaymentSuccess = async ({ payment, payload, cashfreeOrderId }) => {
   });
 };
 
+const processSubscriptionSuccess = async ({ purchase, payload, cashfreeOrderId }) => {
+  const cashfreeOrder = await fetchCashfreeOrder(cashfreeOrderId);
+  const providerPayment = payload.data?.payment || {};
+
+  if (cashfreeOrder.order_status !== CASHFREE_ORDER_STATUS.PAID) {
+    await SubscriptionPurchase.findByIdAndUpdate(purchase._id, {
+      $set: {
+        paymentStatus: PAYMENT_STATUS.PROCESSING,
+        cashfreeStatus: cashfreeOrder.order_status || CASHFREE_ORDER_STATUS.ACTIVE,
+        cashfreePaymentId: providerPayment.cf_payment_id?.toString(),
+        providerSyncedAt: new Date()
+      }
+    });
+    return;
+  }
+
+  await confirmSubscriptionPurchase({
+    purchase,
+    cashfreePaymentId: providerPayment.cf_payment_id?.toString(),
+    confirmedAt: providerPayment.payment_time
+      ? new Date(providerPayment.payment_time)
+      : new Date()
+  });
+};
+
 export const processCashfreeWebhook = async ({ eventId, payload }) => {
   const event = await CashfreeWebhookEvent.findOneAndUpdate(
     { _id: eventId, status: 'RECEIVED' },
@@ -165,23 +195,38 @@ export const processCashfreeWebhook = async ({ eventId, payload }) => {
   try {
     const cashfreeOrderId = payload.data?.order?.order_id;
     const payment = await findPaymentForCashfreeOrder(cashfreeOrderId);
+    const purchase = payment
+      ? null
+      : await SubscriptionPurchase.findOne({ cashfreeOrderId });
 
-    if (!payment) {
-      throw new Error('Payment record was not found for Cashfree order');
+    if (!payment && !purchase) {
+      throw new Error('Payment or subscription purchase was not found for Cashfree order');
     }
 
     if (payload.type === CASHFREE_WEBHOOK_TYPE.SUCCESS) {
-      await processPaymentSuccess({ payment, payload, cashfreeOrderId });
+      if (payment) {
+        await processPaymentSuccess({ payment, payload, cashfreeOrderId });
+      } else {
+        await processSubscriptionSuccess({ purchase, payload, cashfreeOrderId });
+      }
     } else if (
       [CASHFREE_WEBHOOK_TYPE.FAILED, CASHFREE_WEBHOOK_TYPE.USER_DROPPED].includes(
         payload.type
       )
     ) {
-      await markCashfreeAttemptUnsuccessful({
-        payment,
-        payload,
-        eventType: payload.type
-      });
+      if (payment) {
+        await markCashfreeAttemptUnsuccessful({
+          payment,
+          payload,
+          eventType: payload.type
+        });
+      } else {
+        await markSubscriptionPurchaseUnsuccessful({
+          purchase,
+          payload,
+          eventType: payload.type
+        });
+      }
     }
 
     await CashfreeWebhookEvent.findByIdAndUpdate(event._id, {
@@ -205,5 +250,6 @@ export const processCashfreeWebhook = async ({ eventId, payload }) => {
         lastError: error.message
       }
     });
+    throw error;
   }
 };

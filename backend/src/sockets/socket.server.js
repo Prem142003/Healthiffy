@@ -65,3 +65,40 @@ export const emitPaymentConfirmed = ({ order, payment, paymentSummary }) => {
     });
   }
 };
+
+export const emitSubscriptionActivated = (subscription) => {
+  if (!ioInstance || !subscription) return;
+  const customerId = subscription.customer?._id?.toString?.() || subscription.customer?.toString?.();
+  const branchId = subscription.branch?._id?.toString?.() || subscription.branch?.toString?.();
+  const payload = {
+    subscriptionId: subscription._id,
+    customerId,
+    branchId,
+    status: subscription.status,
+    activatedAt: subscription.activatedAt
+  };
+
+  if (customerId) ioInstance.to(`user:${customerId}`).emit('subscription:activated', payload);
+  ioInstance.to('admin').emit('subscription:activated', payload);
+  if (branchId) ioInstance.to(`worker:${branchId}`).emit('subscription:activated', payload);
+};
+
+export const emitSubscriptionDelivery = ({ subscription, delivery }) => {
+  if (!ioInstance || !subscription || !delivery) return;
+  const customerId = subscription.customer?._id?.toString?.() || subscription.customer?.toString?.();
+  const branchId = subscription.branch?._id?.toString?.() || subscription.branch?.toString?.();
+  const payload = {
+    subscriptionId: subscription._id,
+    customerId,
+    branchId,
+    mealsDelivered: subscription.mealsDelivered,
+    mealsRemaining: subscription.mealsRemaining,
+    status: subscription.status,
+    deliveryDateKey: delivery.deliveryDateKey,
+    deliveredAt: delivery.deliveryTime
+  };
+
+  if (customerId) ioInstance.to(`user:${customerId}`).emit('subscription:delivered', payload);
+  ioInstance.to('admin').emit('subscription:delivered', payload);
+  if (branchId) ioInstance.to(`worker:${branchId}`).emit('subscription:delivered', payload);
+};
