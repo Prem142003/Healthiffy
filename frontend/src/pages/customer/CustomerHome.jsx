@@ -1,234 +1,308 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { BranchSelector } from '../../components/customer/BranchSelector';
 import { CategoryTabs } from '../../components/customer/CategoryTabs';
+import DashboardHeader from '../../components/customer/dashboard/DashboardHeader';
+import BranchSpotlight from '../../components/customer/dashboard/BranchSpotlight';
+import PopularMenu from '../../components/customer/dashboard/PopularMenu';
+import QuickActions from '../../components/customer/dashboard/QuickActions';
+import RecentOrders from '../../components/customer/dashboard/RecentOrders';
+import SubscriptionSummary from '../../components/customer/dashboard/SubscriptionSummary';
+import WelcomeSection from '../../components/customer/dashboard/WelcomeSection';
 import { MenuCard } from '../../components/customer/MenuCard';
 import { logoutUser } from '../../redux/slices/authSlice';
 import { addCartItem, fetchCart } from '../../redux/slices/cartSlice';
 import { branchApi } from '../../services/branchApi';
 import { categoryApi } from '../../services/categoryApi';
 import { menuItemApi } from '../../services/menuItemApi';
+import { orderApi } from '../../services/orderApi';
+import { subscriptionApi } from '../../services/subscriptionApi';
 import { PublicLanding } from '../public/PublicLanding';
+import './CustomerDashboard.css';
+
+const getApiMessage = (error, fallback) => error.response?.data?.message || fallback;
 
 const AuthenticatedCustomerHome = () => {
   const dispatch = useDispatch();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const { cart } = useSelector((state) => state.cart);
+  const isCustomer = user?.role === 'CUSTOMER';
+
   const [branches, setBranches] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [menuItems, setMenuItems] = useState([]);
+  const [allMenuItems, setAllMenuItems] = useState([]);
+  const [recentOrders, setRecentOrders] = useState([]);
+  const [subscriptions, setSubscriptions] = useState([]);
   const [selectedBranchId, setSelectedBranchId] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState('');
   const [search, setSearch] = useState('');
   const [foodType, setFoodType] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [menuLoading, setMenuLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [ordersLoading, setOrdersLoading] = useState(isCustomer);
+  const [subscriptionLoading, setSubscriptionLoading] = useState(isCustomer);
+  const [pageError, setPageError] = useState('');
+  const [menuError, setMenuError] = useState('');
+  const [ordersError, setOrdersError] = useState('');
+  const [subscriptionError, setSubscriptionError] = useState('');
+  const [notice, setNotice] = useState('');
+
+  const loadRecentOrders = useCallback(async () => {
+    if (!isCustomer) return;
+    try {
+      setOrdersLoading(true);
+      setOrdersError('');
+      const response = await orderApi.getMyOrders({ limit: 3 });
+      setRecentOrders(response.data.data.orders || []);
+    } catch (error) {
+      setOrdersError(getApiMessage(error, 'We could not load your recent orders.'));
+    } finally {
+      setOrdersLoading(false);
+    }
+  }, [isCustomer]);
+
+  const loadSubscriptions = useCallback(async () => {
+    if (!isCustomer) return;
+    try {
+      setSubscriptionLoading(true);
+      setSubscriptionError('');
+      const response = await subscriptionApi.getMySubscriptions();
+      setSubscriptions(response.data.data.subscriptions || []);
+    } catch (error) {
+      setSubscriptionError(getApiMessage(error, 'We could not load your monthly plan.'));
+    } finally {
+      setSubscriptionLoading(false);
+    }
+  }, [isCustomer]);
 
   useEffect(() => {
-    if (isAuthenticated) {
-      dispatch(fetchCart());
-    }
-  }, [dispatch, isAuthenticated]);
+    if (isAuthenticated && isCustomer) dispatch(fetchCart());
+  }, [dispatch, isAuthenticated, isCustomer]);
 
   useEffect(() => {
     const loadInitialData = async () => {
-      try {
-        setLoading(true);
-        const [branchResponse, categoryResponse] = await Promise.all([
-          branchApi.getPublicBranches({ limit: 100, sort: 'name' }),
-          categoryApi.getPublicCategories({ limit: 100, sort: 'displayOrder name' })
-        ]);
+      setInitialLoading(true);
+      setPageError('');
+      const [branchResult, categoryResult] = await Promise.allSettled([
+        branchApi.getPublicBranches({ limit: 100, sort: 'name' }),
+        categoryApi.getPublicCategories({ limit: 100, sort: 'displayOrder name' })
+      ]);
 
-        const activeBranches = branchResponse.data.data.branches;
+      if (branchResult.status === 'fulfilled') {
+        const activeBranches = branchResult.value.data.data.branches || [];
         setBranches(activeBranches);
-        setCategories(categoryResponse.data.data.categories);
         setSelectedBranchId((current) => current || activeBranches[0]?._id || '');
-      } catch (apiError) {
-        setError(apiError.response?.data?.message || 'Unable to load customer menu.');
-      } finally {
-        setLoading(false);
+      } else {
+        setPageError(getApiMessage(branchResult.reason, 'Branches are temporarily unavailable.'));
       }
+
+      if (categoryResult.status === 'fulfilled') {
+        setCategories(categoryResult.value.data.data.categories || []);
+      }
+      setInitialLoading(false);
     };
 
     loadInitialData();
   }, []);
 
   useEffect(() => {
+    loadRecentOrders();
+    loadSubscriptions();
+
+    window.addEventListener('healthiffy:payment-confirmed', loadRecentOrders);
+    window.addEventListener('healthiffy:subscription-updated', loadSubscriptions);
+    return () => {
+      window.removeEventListener('healthiffy:payment-confirmed', loadRecentOrders);
+      window.removeEventListener('healthiffy:subscription-updated', loadSubscriptions);
+    };
+  }, [loadRecentOrders, loadSubscriptions]);
+
+  useEffect(() => {
     if (!selectedBranchId) {
-      setMenuItems([]);
+      setAllMenuItems([]);
       return;
     }
 
     const loadMenu = async () => {
       try {
         setMenuLoading(true);
+        setMenuError('');
         const response = await menuItemApi.getPublicMenuItems({
           branch: selectedBranchId,
-          category: selectedCategoryId || undefined,
-          search: search || undefined,
-          foodType: foodType || undefined,
           limit: 100,
           sort: 'name'
         });
-        setMenuItems(response.data.data.menuItems);
-      } catch (apiError) {
-        setError(apiError.response?.data?.message || 'Unable to load menu items.');
+        setAllMenuItems(response.data.data.menuItems || []);
+      } catch (error) {
+        setMenuError(getApiMessage(error, 'The menu is temporarily unavailable.'));
       } finally {
         setMenuLoading(false);
       }
     };
 
     loadMenu();
-  }, [selectedBranchId, selectedCategoryId, search, foodType]);
+  }, [selectedBranchId]);
+
+  useEffect(() => {
+    if (!notice) return undefined;
+    const timeoutId = window.setTimeout(() => setNotice(''), 3500);
+    return () => window.clearTimeout(timeoutId);
+  }, [notice]);
 
   const selectedBranch = useMemo(
     () => branches.find((branch) => branch._id === selectedBranchId),
     [branches, selectedBranchId]
   );
 
+  const filteredMenuItems = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    return allMenuItems.filter((item) => {
+      const categoryId = item.category?._id || item.category;
+      const matchesCategory = !selectedCategoryId || categoryId === selectedCategoryId;
+      const matchesFoodType = !foodType || item.foodType === foodType;
+      const searchableText = [item.name, item.description, ...(item.tags || [])].join(' ').toLowerCase();
+      return matchesCategory && matchesFoodType && (!term || searchableText.includes(term));
+    });
+  }, [allMenuItems, selectedCategoryId, foodType, search]);
+
+  const popularItems = useMemo(
+    () => [...allMenuItems].sort((a, b) => Number(b.isBestseller) - Number(a.isBestseller)).slice(0, 4),
+    [allMenuItems]
+  );
+
+  const activeSubscription = useMemo(
+    () => subscriptions.find((subscription) => subscription.status === 'ACTIVE'),
+    [subscriptions]
+  );
+
+  const cartCount = useMemo(
+    () => (cart?.items || []).reduce((total, item) => total + Number(item.quantity || 0), 0),
+    [cart]
+  );
+
   const addItemToCart = async (item) => {
-    setError('');
-    setSuccess('');
-
-    if (!isAuthenticated) {
-      setError('Please login before adding items to cart.');
-      return;
-    }
-
     const result = await dispatch(addCartItem({ menuItem: item._id, quantity: 1 }));
-
     if (addCartItem.fulfilled.match(result)) {
-      setSuccess(`${item.name} added to cart.`);
-      return;
+      setNotice(`${item.name} was added to your cart.`);
+    } else {
+      setNotice(result.payload || 'We could not add that item to your cart.');
     }
-
-    setError(result.payload || 'Unable to add item to cart.');
   };
 
   return (
-    <main className="min-h-screen bg-slate-50">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <Link to="/" className="text-2xl font-semibold text-emerald-700">Healthiffy</Link>
-          <nav className="flex flex-wrap items-center gap-3">
-            {isAuthenticated ? (
-              <>
-                <span className="rounded-md bg-slate-100 px-3 py-2 text-sm text-slate-700">{user?.name}</span>
-                {user?.role === 'ADMIN' && (
-                  <Link className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium" to="/admin">Admin</Link>
-                )}
-                {user?.role === 'WORKER' && (
-                  <Link className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium" to="/worker">Worker</Link>
-                )}
-                {user?.role === 'CUSTOMER' && (
-                  <>
-                    <Link className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium" to="/checkout">Cart {cart?.items?.length ? `(${cart.items.length})` : ''}</Link>
-                    <Link className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium" to="/my-orders">Orders</Link>
-                    <Link className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium" to="/monthly-plans">Monthly Plans</Link>
-                    <Link className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium" to="/my-subscription">My Subscription</Link>
-                  </>
-                )}
-                {user?.role !== 'CUSTOMER' && (
-                  <Link className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium" to="/change-password">Account</Link>
-                )}
-                <button className="rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white" onClick={() => dispatch(logoutUser())} type="button">Logout</button>
-              </>
-            ) : (
-              <>
-                <Link className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium" to="/login">Login</Link>
-                <Link className="rounded-md bg-emerald-700 px-3 py-2 text-sm font-medium text-white" to="/login">Order now</Link>
-              </>
-            )}
-          </nav>
-        </div>
-      </header>
+    <main className="customer-dashboard">
+      <DashboardHeader
+        user={user}
+        cartCount={cartCount}
+        onLogout={() => dispatch(logoutUser())}
+      />
 
-      <section className="mx-auto max-w-7xl px-4 py-8">
-        <div className="mb-8 grid gap-6 lg:grid-cols-[1fr_360px] lg:items-end">
-          <div>
-            <p className="text-sm font-medium uppercase tracking-wide text-emerald-700">Fresh cafe ordering</p>
-            <h1 className="mt-2 text-4xl font-semibold text-slate-950">Choose your branch and browse today&apos;s menu.</h1>
-            <p className="mt-3 max-w-2xl text-slate-600">
-              Branches, categories, and menu items are loaded dynamically from Healthiffy admin data.
-            </p>
+      <div className="customer-dashboard__container">
+        <WelcomeSection name={user?.name} branchName={selectedBranch?.name} />
+        <QuickActions />
+        <BranchSpotlight branch={selectedBranch} />
+
+        {isCustomer ? (
+          <div className="dashboard-two-column">
+            <RecentOrders
+              orders={recentOrders}
+              loading={ordersLoading}
+              error={ordersError}
+              onRetry={loadRecentOrders}
+            />
+            <SubscriptionSummary
+              subscription={activeSubscription}
+              loading={subscriptionLoading}
+              error={subscriptionError}
+              onRetry={loadSubscriptions}
+            />
           </div>
-          {selectedBranch && (
-            <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-              <div className="text-sm font-semibold text-slate-950">{selectedBranch.name}</div>
-              <div className="mt-1 text-sm text-slate-600">{selectedBranch.address}</div>
-              <div className="mt-2 flex items-center justify-between gap-3 text-sm">
-                <span>{selectedBranch.openingTime} - {selectedBranch.closingTime}</span>
-                <span className={`rounded-full px-2 py-1 text-xs font-semibold ${selectedBranch.status === 'OPEN' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-700'}`}>
-                  {selectedBranch.status}
-                </span>
-              </div>
+        ) : null}
+
+        <PopularMenu items={popularItems} loading={menuLoading} onAdd={addItemToCart} />
+      </div>
+
+      <section id="menu" className="customer-menu" aria-labelledby="full-menu-title">
+        <div className="customer-menu__inner">
+          <div className="dashboard-section__heading customer-menu__heading">
+            <div>
+              <p className="dashboard-eyebrow">Made fresh at your cafe</p>
+              <h2 id="full-menu-title">Explore the full menu</h2>
             </div>
-          )}
-        </div>
+            <p>{filteredMenuItems.length} item{filteredMenuItems.length === 1 ? '' : 's'}</p>
+          </div>
 
-        {error && <p className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-        {success && <p className="mb-4 rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{success}</p>}
+          {pageError ? <div className="dashboard-alert dashboard-alert--error">{pageError}</div> : null}
+          {notice ? <div className="dashboard-alert" role="status">{notice}</div> : null}
 
-        {loading ? (
-          <p className="rounded-lg border border-slate-200 bg-white p-5 text-sm text-slate-600">Loading Healthiffy...</p>
-        ) : branches.length === 0 ? (
-          <p className="rounded-lg border border-slate-200 bg-white p-5 text-sm text-slate-600">No active branches are available right now.</p>
-        ) : (
-          <>
-            <section className="mb-6 space-y-4">
-              <div>
-                <h2 className="mb-3 text-lg font-semibold text-slate-950">Select Branch</h2>
-                <BranchSelector branches={branches} selectedBranchId={selectedBranchId} onSelectBranch={(branchId) => {
-                  setSelectedBranchId(branchId);
-                  setSelectedCategoryId('');
-                }} />
+          {initialLoading ? (
+            <div className="customer-menu-grid" aria-label="Loading menu">
+              {[1, 2, 3, 4].map((item) => <div className="dashboard-skeleton dashboard-skeleton--menu" key={item} />)}
+            </div>
+          ) : branches.length === 0 ? (
+            <p className="dashboard-inline-message">No active branches are available right now.</p>
+          ) : (
+            <>
+              <div className="customer-menu__controls">
+                <div id="branch-picker" className="customer-filter-group">
+                  <label>Choose your branch</label>
+                  <BranchSelector
+                    branches={branches}
+                    selectedBranchId={selectedBranchId}
+                    onSelectBranch={(branchId) => {
+                      setSelectedBranchId(branchId);
+                      setSelectedCategoryId('');
+                    }}
+                  />
+                </div>
+
+                <div className="customer-filter-row">
+                  <label className="customer-search">
+                    <span>Search menu</span>
+                    <input
+                      type="search"
+                      placeholder="Search dishes or ingredients"
+                      value={search}
+                      onChange={(event) => setSearch(event.target.value)}
+                    />
+                  </label>
+                  <label className="customer-select">
+                    <span>Food preference</span>
+                    <select value={foodType} onChange={(event) => setFoodType(event.target.value)}>
+                      <option value="">All food types</option>
+                      <option value="VEG">Vegetarian</option>
+                      <option value="NON_VEG">Non vegetarian</option>
+                    </select>
+                  </label>
+                </div>
+
+                <div className="customer-filter-group">
+                  <label>Categories</label>
+                  <CategoryTabs
+                    categories={categories}
+                    selectedCategoryId={selectedCategoryId}
+                    onSelectCategory={setSelectedCategoryId}
+                  />
+                </div>
               </div>
 
-              <div className="grid gap-3 lg:grid-cols-[1fr_180px]">
-                <input
-                  className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
-                  placeholder="Search food or tags"
-                  value={search}
-                  onChange={(event) => setSearch(event.target.value)}
-                />
-                <select
-                  className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
-                  value={foodType}
-                  onChange={(event) => setFoodType(event.target.value)}
-                >
-                  <option value="">All food types</option>
-                  <option value="VEG">Veg</option>
-                  <option value="NON_VEG">Non Veg</option>
-                </select>
-              </div>
-
-              <div>
-                <h2 className="mb-3 text-lg font-semibold text-slate-950">Categories</h2>
-                <CategoryTabs categories={categories} selectedCategoryId={selectedCategoryId} onSelectCategory={setSelectedCategoryId} />
-              </div>
-            </section>
-
-            <section>
-              <div className="mb-4 flex items-center justify-between gap-3">
-                <h2 className="text-xl font-semibold text-slate-950">Menu</h2>
-                {menuLoading && <span className="text-sm text-slate-500">Refreshing...</span>}
-              </div>
-
-              {menuItems.length === 0 ? (
-                <p className="rounded-lg border border-slate-200 bg-white p-5 text-sm text-slate-600">No menu items match this selection.</p>
+              {menuError ? <div className="dashboard-alert dashboard-alert--error">{menuError}</div> : null}
+              {menuLoading ? (
+                <div className="customer-menu-grid" aria-label="Loading menu items">
+                  {[1, 2, 3, 4].map((item) => <div className="dashboard-skeleton dashboard-skeleton--menu" key={item} />)}
+                </div>
+              ) : filteredMenuItems.length === 0 ? (
+                <p className="dashboard-inline-message">No menu items match your current filters.</p>
               ) : (
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {menuItems.map((item) => (
+                <div className="customer-menu-grid">
+                  {filteredMenuItems.map((item) => (
                     <MenuCard key={item._id} item={item} onOrder={addItemToCart} />
                   ))}
                 </div>
               )}
-            </section>
-          </>
-        )}
+            </>
+          )}
+        </div>
       </section>
     </main>
   );
@@ -236,10 +310,5 @@ const AuthenticatedCustomerHome = () => {
 
 export const CustomerHome = () => {
   const { isAuthenticated } = useSelector((state) => state.auth);
-
-  if (!isAuthenticated) {
-    return <PublicLanding />;
-  }
-
-  return <AuthenticatedCustomerHome />;
+  return isAuthenticated ? <AuthenticatedCustomerHome /> : <PublicLanding />;
 };

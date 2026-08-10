@@ -1,17 +1,15 @@
 export const BranchSelector = ({ branches, selectedBranchId, onSelectBranch }) => (
-  <div className="flex gap-2 overflow-x-auto pb-2">
+  <div className="branch-selector" role="group" aria-label="Choose ordering branch">
     {branches.map((branch) => (
       <button
         key={branch._id}
-        className={`shrink-0 rounded-md border px-4 py-2 text-sm font-medium ${
-          selectedBranchId === branch._id
-            ? 'border-emerald-700 bg-emerald-700 text-white'
-            : 'border-slate-300 bg-white text-slate-700'
-        }`}
+        className={selectedBranchId === branch._id ? 'is-active' : ''}
+        aria-pressed={selectedBranchId === branch._id}
         onClick={() => onSelectBranch(branch._id)}
         type="button"
       >
-        {branch.name}
+        <span>{branch.name}</span>
+        <small>{branch.status === 'OPEN' ? 'Open now' : branch.status}</small>
       </button>
     ))}
   </div>
