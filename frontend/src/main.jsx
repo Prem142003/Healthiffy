@@ -8,6 +8,7 @@ import { AuthBootstrap } from './components/auth/AuthBootstrap';
 import { store } from './redux/store';
 import 'react-toastify/dist/ReactToastify.css';
 import './styles/index.css';
+import './styles/ResponsiveOperations.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

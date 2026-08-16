@@ -18,9 +18,9 @@ export const MyOrders = () => {
   const paymentSummary = user?.paymentSummary || {};
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-8">
+    <main className="customer-mobile-page min-h-screen bg-slate-50 px-4 py-8">
       <section className="mx-auto max-w-5xl">
-        <div className="mb-6 flex items-center justify-between gap-4">
+        <div className="mobile-page-heading mb-6 flex items-center justify-between gap-4">
           <div>
             <p className="text-sm font-medium uppercase tracking-wide text-emerald-700">Customer</p>
             <h1 className="text-3xl font-semibold text-slate-950">My Orders</h1>

@@ -1,0 +1,269 @@
+@media (max-width: 639px) {
+  .customer-mobile-page,
+  .worker-mobile-shell,
+  .admin-shell main {
+    padding: 20px 14px;
+  }
+
+  .customer-mobile-page h1,
+  .worker-mobile-shell h1,
+  .admin-shell main h1 {
+    font-size: 26px;
+    line-height: 1.18;
+  }
+
+  .customer-mobile-page button,
+  .customer-mobile-page a,
+  .customer-mobile-page input,
+  .customer-mobile-page select,
+  .worker-mobile-shell button,
+  .worker-mobile-shell a,
+  .worker-mobile-shell input,
+  .worker-mobile-shell select,
+  .admin-shell main button,
+  .admin-shell main a,
+  .admin-shell main input,
+  .admin-shell main select,
+  .admin-shell main textarea {
+    min-height: 44px;
+  }
+
+  .mobile-page-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .mobile-page-heading > a,
+  .mobile-page-heading > button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .customer-mobile-page article,
+  .customer-mobile-page aside,
+  .customer-mobile-page > section > section,
+  .worker-mobile-shell article,
+  .admin-shell main form,
+  .admin-shell main section {
+    max-width: 100%;
+  }
+
+  .checkout-item {
+    padding: 14px;
+  }
+
+  .checkout-item__row {
+    display: grid;
+    grid-template-columns: 68px minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .checkout-item__image {
+    width: 68px;
+    height: 68px;
+  }
+
+  .checkout-item__total {
+    grid-column: 2;
+    font-size: 15px;
+  }
+
+  .checkout-summary {
+    padding: 18px;
+  }
+
+  .checkout-summary__submit {
+    min-height: 50px !important;
+  }
+
+  .payment-option-card {
+    padding: 18px;
+  }
+
+  .worker-mobile-header {
+    margin-bottom: 18px;
+    padding: 18px;
+    border: 1px solid #153f2a;
+    border-radius: 8px;
+    background: #dce77e;
+    color: #153f2a;
+  }
+
+  .worker-mobile-header p:first-child {
+    color: #2e7d4f;
+  }
+
+  .worker-view-tabs {
+    width: 100%;
+    padding: 4px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    overflow: visible;
+  }
+
+  .worker-view-tabs button {
+    min-width: 0;
+    padding: 8px 5px;
+    white-space: normal;
+  }
+
+  .worker-operation-card {
+    padding: 18px;
+  }
+
+  .worker-operation-card__stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .worker-primary-action {
+    width: 100%;
+    min-height: 50px !important;
+  }
+
+  .admin-mobile-header {
+    position: sticky;
+    top: 0;
+    z-index: 55;
+    min-height: 64px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    border-bottom: 1px solid rgba(21, 63, 42, 0.18);
+    background: rgba(255, 253, 248, 0.97);
+    color: #153f2a;
+    backdrop-filter: blur(14px);
+  }
+
+  .admin-mobile-header strong,
+  .admin-mobile-header span {
+    display: block;
+  }
+
+  .admin-mobile-header strong {
+    font-size: 17px;
+  }
+
+  .admin-mobile-header span {
+    margin-top: 2px;
+    color: #607066;
+    font-size: 11px;
+  }
+
+  .admin-mobile-header a {
+    min-height: 44px;
+    padding: 0 12px;
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid rgba(21, 63, 42, 0.24);
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .admin-shell main > section {
+    width: 100%;
+  }
+
+  .admin-shell main form {
+    padding: 18px;
+  }
+
+  .admin-shell main .grid.grid-cols-2,
+  .admin-shell main .grid.grid-cols-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-mobile-overview.grid.grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-shell main .overflow-x-auto {
+    overflow: visible;
+  }
+
+  .admin-shell table {
+    width: 100%;
+    min-width: 0 !important;
+    display: block;
+    background: transparent;
+  }
+
+  .admin-shell table thead {
+    display: none;
+  }
+
+  .admin-shell table tbody {
+    display: grid;
+    gap: 12px;
+  }
+
+  .admin-shell table tbody tr {
+    padding: 14px;
+    display: grid;
+    gap: 0;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+  }
+
+  .admin-shell table tbody td {
+    min-width: 0;
+    padding: 10px 0;
+    display: grid;
+    grid-template-columns: minmax(88px, 34%) minmax(0, 1fr);
+    align-items: start;
+    gap: 10px;
+    overflow-wrap: anywhere;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .admin-shell table tbody td:last-child {
+    border-bottom: 0;
+  }
+
+  .admin-shell table tbody td::before {
+    color: #64748b;
+    content: attr(data-label);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .admin-shell table tbody td > .flex {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-shell table tbody td button,
+  .admin-shell table tbody td select {
+    width: 100%;
+  }
+
+  .admin-dashboard-shortcuts {
+    display: none;
+  }
+}
+
+@media (max-width: 359px) {
+  .customer-mobile-page,
+  .worker-mobile-shell,
+  .admin-shell main {
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
+  .worker-operation-card__stats {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-shell table tbody td {
+    grid-template-columns: 82px minmax(0, 1fr);
+  }
+}

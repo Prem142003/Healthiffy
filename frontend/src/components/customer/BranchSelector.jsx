@@ -1,3 +1,5 @@
+import SafeImage from './dashboard/SafeImage';
+
 export const BranchSelector = ({ branches, selectedBranchId, onSelectBranch }) => (
   <div className="branch-selector" role="group" aria-label="Choose ordering branch">
     {branches.map((branch) => (
@@ -8,8 +10,16 @@ export const BranchSelector = ({ branches, selectedBranchId, onSelectBranch }) =
         onClick={() => onSelectBranch(branch._id)}
         type="button"
       >
-        <span>{branch.name}</span>
-        <small>{branch.status === 'OPEN' ? 'Open now' : branch.status}</small>
+        <SafeImage
+          className="branch-selector__image"
+          src={branch.image?.url || branch.image}
+          alt={branch.name}
+          fallback="HF"
+        />
+        <span className="branch-selector__copy">
+          <strong>{branch.name}</strong>
+          <small>{branch.address || (branch.status === 'OPEN' ? 'Open now' : branch.status)}</small>
+        </span>
       </button>
     ))}
   </div>

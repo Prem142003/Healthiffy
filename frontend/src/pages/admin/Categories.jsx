@@ -146,17 +146,17 @@ export const Categories = () => {
                   <tbody className="divide-y divide-slate-200">
                     {categories.map((category) => (
                       <tr key={category._id}>
-                        <td className="px-4 py-3">
+                        <td data-label="Category" className="px-4 py-3">
                           <div className="font-medium text-slate-950">{category.name}</div>
                           <div className="text-xs text-slate-500">{category.description || 'No description'}</div>
                         </td>
-                        <td className="px-4 py-3">{category.displayOrder}</td>
-                        <td className="px-4 py-3">
+                        <td data-label="Order" className="px-4 py-3">{category.displayOrder}</td>
+                        <td data-label="Active" className="px-4 py-3">
                           <span className={`rounded-full px-2 py-1 text-xs font-semibold ${category.isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-700'}`}>
                             {category.isActive ? 'Active' : 'Inactive'}
                           </span>
                         </td>
-                        <td className="px-4 py-3">
+                        <td data-label="Actions" className="px-4 py-3">
                           <div className="flex flex-wrap gap-2">
                             <button className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium" onClick={() => startEdit(category)}>Edit</button>
                             <button

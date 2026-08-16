@@ -67,15 +67,15 @@ export const Orders = () => {
                 <tbody className="divide-y divide-slate-200">
                   {orders.map((order) => (
                     <tr key={order._id}>
-                      <td className="px-4 py-3 font-medium text-slate-950">{order.orderNumber}</td>
-                      <td className="px-4 py-3">
+                      <td data-label="Order" className="px-4 py-3 font-medium text-slate-950">{order.orderNumber}</td>
+                      <td data-label="Customer" className="px-4 py-3">
                         <div>{order.customer?.name}</div>
                         <div className="text-xs text-slate-500">{order.customer?.email}</div>
                       </td>
-                      <td className="px-4 py-3">{order.branch?.name}</td>
-                      <td className="px-4 py-3">{order.items.map((item) => `${item.nameSnapshot} x ${item.quantity}`).join(', ')}</td>
-                      <td className="px-4 py-3">₹{order.totalAmount}</td>
-                      <td className="px-4 py-3">
+                      <td data-label="Branch" className="px-4 py-3">{order.branch?.name}</td>
+                      <td data-label="Items" className="px-4 py-3">{order.items.map((item) => `${item.nameSnapshot} x ${item.quantity}`).join(', ')}</td>
+                      <td data-label="Total" className="px-4 py-3">₹{order.totalAmount}</td>
+                      <td data-label="Payment" className="px-4 py-3">
                         <span className="w-fit rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">{order.paymentStatus}</span>
                       </td>
                     </tr>

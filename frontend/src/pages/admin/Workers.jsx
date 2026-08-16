@@ -56,8 +56,8 @@ export const Workers = () => {
                 <tbody className="divide-y divide-slate-200">
                   {workers.map((worker) => (
                     <tr key={worker._id}>
-                      <td className="px-4 py-3"><div className="font-medium">{worker.name}</div><div className="text-xs text-slate-500">{worker.email}</div></td>
-                      <td className="px-4 py-3">
+                      <td data-label="Worker" className="px-4 py-3"><div className="font-medium">{worker.name}</div><div className="text-xs text-slate-500">{worker.email}</div></td>
+                      <td data-label="Branch" className="px-4 py-3">
                         <select
                           className="w-full min-w-40 rounded-md border border-slate-300 px-2 py-1"
                           value={worker.assignedBranch?._id || worker.assignedBranch || ''}
@@ -67,8 +67,8 @@ export const Workers = () => {
                           {activeBranches.map((branch) => <option key={branch._id} value={branch._id}>{branch.name}</option>)}
                         </select>
                       </td>
-                      <td className="px-4 py-3">{worker.isActive ? 'Active' : 'Inactive'}</td>
-                      <td className="px-4 py-3"><button className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium" onClick={() => dispatch(updateUser({ id: worker._id, payload: { isActive: !worker.isActive } }))}>{worker.isActive ? 'Deactivate' : 'Activate'}</button></td>
+                      <td data-label="Status" className="px-4 py-3">{worker.isActive ? 'Active' : 'Inactive'}</td>
+                      <td data-label="Actions" className="px-4 py-3"><button className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium" onClick={() => dispatch(updateUser({ id: worker._id, payload: { isActive: !worker.isActive } }))}>{worker.isActive ? 'Deactivate' : 'Activate'}</button></td>
                     </tr>
                   ))}
                 </tbody>

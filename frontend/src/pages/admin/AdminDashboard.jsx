@@ -1,7 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchDashboardAnalytics } from '../../redux/slices/analyticsSlice';
+import { subscriptionApi } from '../../services/subscriptionApi';
 
 const formatCurrency = (value) => `₹${Math.round(value || 0).toLocaleString('en-IN')}`;
 
@@ -34,12 +35,27 @@ const BarChart = ({ data, labelKey, valueKey }) => {
 export const AdminDashboard = () => {
   const dispatch = useDispatch();
   const { summary, revenue, branchRevenue, bestSellingItems, status, error } = useSelector((state) => state.analytics);
+  const [subscriptionSummary, setSubscriptionSummary] = useState(null);
+
+  const todayOrders = useMemo(() => {
+    const todayKey = new Date().toISOString().slice(0, 10);
+    return revenue.find((item) => item._id === todayKey)?.orders || 0;
+  }, [revenue]);
 
   useEffect(() => {
-    dispatch(fetchDashboardAnalytics());
-    const refreshAnalytics = () => dispatch(fetchDashboardAnalytics());
+    const refreshAnalytics = () => {
+      dispatch(fetchDashboardAnalytics());
+      subscriptionApi.getAdminAnalytics()
+        .then((response) => setSubscriptionSummary(response.data.data.analytics))
+        .catch(() => setSubscriptionSummary(null));
+    };
+    refreshAnalytics();
     window.addEventListener('healthiffy:payment-confirmed', refreshAnalytics);
-    return () => window.removeEventListener('healthiffy:payment-confirmed', refreshAnalytics);
+    window.addEventListener('healthiffy:subscription-updated', refreshAnalytics);
+    return () => {
+      window.removeEventListener('healthiffy:payment-confirmed', refreshAnalytics);
+      window.removeEventListener('healthiffy:subscription-updated', refreshAnalytics);
+    };
   }, [dispatch]);
 
   return (
@@ -50,7 +66,7 @@ export const AdminDashboard = () => {
             <p className="text-sm font-medium uppercase tracking-wide text-emerald-700">Admin</p>
             <h1 className="text-3xl font-semibold text-slate-950">Dashboard</h1>
           </div>
-          <nav className="flex flex-wrap gap-2">
+          <nav className="admin-dashboard-shortcuts flex flex-wrap gap-2">
             {['branches', 'categories', 'menu', 'orders', 'payments', 'users', 'workers'].map((path) => (
               <Link key={path} className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium capitalize" to={`/admin/${path}`}>{path}</Link>
             ))}
@@ -62,7 +78,13 @@ export const AdminDashboard = () => {
           <p className="rounded-lg border border-slate-200 bg-white p-5 text-sm text-slate-600">Loading analytics...</p>
         ) : summary && (
           <>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="admin-mobile-overview grid grid-cols-2 gap-3 sm:hidden">
+              <StatCard label="Today's Revenue" value={formatCurrency(summary.todayRevenue)} />
+              <StatCard label="Today's Orders" value={todayOrders} />
+              <StatCard label="Customers" value={summary.totalCustomers} />
+              <StatCard label="Monthly Customers" value={subscriptionSummary?.activeSubscribers ?? '-'} />
+            </div>
+            <div className="hidden gap-4 sm:grid sm:grid-cols-2 lg:grid-cols-4">
               <StatCard label="Today Revenue" value={formatCurrency(summary.todayRevenue)} />
               <StatCard label="Yesterday Revenue" value={formatCurrency(summary.yesterdayRevenue)} />
               <StatCard label="Weekly Revenue" value={formatCurrency(summary.weeklyRevenue)} />

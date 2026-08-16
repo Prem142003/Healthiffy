@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 
 const links = [
   ['Dashboard', '/admin'],
@@ -17,9 +17,15 @@ const links = [
   ['Settings', '/admin/settings']
 ];
 
-export const AdminLayout = () => (
-  <div className="min-h-screen bg-slate-50 lg:grid lg:grid-cols-[240px_1fr]">
-    <aside className="border-b border-slate-200 bg-white lg:min-h-screen lg:border-b-0 lg:border-r">
+export const AdminLayout = () => {
+  const location = useLocation();
+  const currentLabel = [...links]
+    .sort((a, b) => b[1].length - a[1].length)
+    .find(([, path]) => location.pathname === path || location.pathname.startsWith(`${path}/`))?.[0] || 'Dashboard';
+
+  return (
+  <div className="admin-shell min-h-screen bg-slate-50 lg:grid lg:grid-cols-[240px_1fr]">
+    <aside className="hidden border-b border-slate-200 bg-white sm:block lg:min-h-screen lg:border-b-0 lg:border-r">
       <div className="px-4 py-5">
         <div className="text-xl font-semibold text-emerald-700">Healthiffy</div>
         <div className="mt-1 text-xs font-medium uppercase tracking-wide text-slate-500">Admin</div>
@@ -42,7 +48,12 @@ export const AdminLayout = () => (
       </nav>
     </aside>
     <div className="min-w-0">
+      <header className="admin-mobile-header sm:hidden">
+        <div><strong>Healthiffy Admin</strong><span>{currentLabel}</span></div>
+        <NavLink to="/admin/settings">Settings</NavLink>
+      </header>
       <Outlet />
     </div>
   </div>
-);
+  );
+};

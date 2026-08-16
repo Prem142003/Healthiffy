@@ -182,19 +182,19 @@ export const Branches = () => {
                   <tbody className="divide-y divide-slate-200">
                     {branches.map((branch) => (
                       <tr key={branch._id}>
-                        <td className="px-4 py-3">
+                        <td data-label="Branch" className="px-4 py-3">
                           <div className="font-medium text-slate-950">{branch.name}</div>
                           <div className="text-xs text-slate-500">{branch.address}</div>
                           <div className="text-xs text-slate-500">{branch.contactNumber}</div>
                         </td>
-                        <td className="px-4 py-3">{branch.openingTime} - {branch.closingTime}</td>
-                        <td className="px-4 py-3">
+                        <td data-label="Hours" className="px-4 py-3">{branch.openingTime} - {branch.closingTime}</td>
+                        <td data-label="Status" className="px-4 py-3">
                           <span className={`rounded-full px-2 py-1 text-xs font-semibold ${branch.status === 'OPEN' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-700'}`}>
                             {branch.status}
                           </span>
                         </td>
-                        <td className="px-4 py-3">{branch.isActive ? 'Yes' : 'No'}</td>
-                        <td className="px-4 py-3">
+                        <td data-label="Active" className="px-4 py-3">{branch.isActive ? 'Yes' : 'No'}</td>
+                        <td data-label="Actions" className="px-4 py-3">
                           <div className="flex flex-wrap gap-2">
                             <button className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium" onClick={() => startEdit(branch)}>Edit</button>
                             <button className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium" onClick={() => toggleStatus(branch)}>

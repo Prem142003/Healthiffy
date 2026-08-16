@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
 import { BranchSelector } from '../../components/customer/BranchSelector';
 import { CategoryTabs } from '../../components/customer/CategoryTabs';
 import DashboardHeader from '../../components/customer/dashboard/DashboardHeader';
@@ -10,8 +11,9 @@ import RecentOrders from '../../components/customer/dashboard/RecentOrders';
 import SubscriptionSummary from '../../components/customer/dashboard/SubscriptionSummary';
 import WelcomeSection from '../../components/customer/dashboard/WelcomeSection';
 import { MenuCard } from '../../components/customer/MenuCard';
+import { MenuItemSheet } from '../../components/customer/MenuItemSheet';
 import { logoutUser } from '../../redux/slices/authSlice';
-import { addCartItem, fetchCart } from '../../redux/slices/cartSlice';
+import { addCartItem, fetchCart, removeCartItem, updateCartItem } from '../../redux/slices/cartSlice';
 import { branchApi } from '../../services/branchApi';
 import { categoryApi } from '../../services/categoryApi';
 import { menuItemApi } from '../../services/menuItemApi';
@@ -46,6 +48,7 @@ const AuthenticatedCustomerHome = () => {
   const [ordersError, setOrdersError] = useState('');
   const [subscriptionError, setSubscriptionError] = useState('');
   const [notice, setNotice] = useState('');
+  const [selectedMenuItem, setSelectedMenuItem] = useState(null);
 
   const loadRecentOrders = useCallback(async () => {
     if (!isCustomer) return;
@@ -180,12 +183,27 @@ const AuthenticatedCustomerHome = () => {
     [cart]
   );
 
-  const addItemToCart = async (item) => {
-    const result = await dispatch(addCartItem({ menuItem: item._id, quantity: 1 }));
+  const cartQuantities = useMemo(() => new Map(
+    (cart?.items || []).map((item) => [String(item.menuItem?._id || item.menuItem), Number(item.quantity || 0)])
+  ), [cart]);
+
+  const addItemToCart = async (item, quantity = 1) => {
+    const result = await dispatch(addCartItem({ menuItem: item._id, quantity }));
     if (addCartItem.fulfilled.match(result)) {
       setNotice(`${item.name} was added to your cart.`);
     } else {
       setNotice(result.payload || 'We could not add that item to your cart.');
+    }
+  };
+
+  const changeCartQuantity = async (item, change) => {
+    const currentQuantity = cartQuantities.get(String(item._id)) || 0;
+    const nextQuantity = currentQuantity + change;
+    const result = nextQuantity <= 0
+      ? await dispatch(removeCartItem(item._id))
+      : await dispatch(updateCartItem({ menuItemId: item._id, quantity: nextQuantity }));
+    if (result.meta.requestStatus === 'rejected') {
+      setNotice(result.payload || 'We could not update your cart.');
     }
   };
 
@@ -194,6 +212,7 @@ const AuthenticatedCustomerHome = () => {
       <DashboardHeader
         user={user}
         cartCount={cartCount}
+        branchName={selectedBranch?.name}
         onLogout={() => dispatch(logoutUser())}
       />
 
@@ -296,7 +315,15 @@ const AuthenticatedCustomerHome = () => {
               ) : (
                 <div className="customer-menu-grid">
                   {filteredMenuItems.map((item) => (
-                    <MenuCard key={item._id} item={item} onOrder={addItemToCart} />
+                    <MenuCard
+                      key={item._id}
+                      item={item}
+                      quantity={cartQuantities.get(String(item._id)) || 0}
+                      onOrder={addItemToCart}
+                      onOpen={setSelectedMenuItem}
+                      onIncrease={(menuItem) => changeCartQuantity(menuItem, 1)}
+                      onDecrease={(menuItem) => changeCartQuantity(menuItem, -1)}
+                    />
                   ))}
                 </div>
               )}
@@ -304,6 +331,14 @@ const AuthenticatedCustomerHome = () => {
           )}
         </div>
       </section>
+      {cartCount > 0 ? (
+        <Link className="mobile-cart-summary" to="/checkout">
+          <span><strong>{cartCount}</strong> item{cartCount === 1 ? '' : 's'}</span>
+          <strong>Rs. {Number(cart?.subtotal || 0).toFixed(0)}</strong>
+          <span>View cart &#8594;</span>
+        </Link>
+      ) : null}
+      <MenuItemSheet item={selectedMenuItem} onClose={() => setSelectedMenuItem(null)} onAdd={addItemToCart} />
     </main>
   );
 };

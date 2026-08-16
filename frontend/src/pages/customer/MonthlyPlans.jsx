@@ -95,9 +95,9 @@ export const MonthlyPlans = () => {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-8">
+    <main className="customer-mobile-page min-h-screen bg-slate-50 px-4 py-8">
       <section className="mx-auto max-w-7xl">
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="mobile-page-heading mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-sm font-medium uppercase tracking-wide text-emerald-700">Customer</p>
             <h1 className="text-3xl font-semibold text-slate-950">Monthly Meal Plans</h1>
@@ -175,4 +175,3 @@ export const MonthlyPlans = () => {
     </main>
   );
 };
-

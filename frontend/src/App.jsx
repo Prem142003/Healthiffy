@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { PaymentConfirmationListener } from './components/payments/PaymentConfirmationListener';
+import { MobileRoleNavigation } from './components/navigation/MobileRoleNavigation';
 import { AuthShell } from './pages/auth/AuthShell';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminLayout } from './pages/admin/AdminLayout';
@@ -78,5 +79,6 @@ export const App = () => (
     </Route>
     <Route path="/unauthorized" element={<Unauthorized />} />
     </Routes>
+    <MobileRoleNavigation />
   </>
 );

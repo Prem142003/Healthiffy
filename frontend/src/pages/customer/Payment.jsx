@@ -123,9 +123,9 @@ export const Payment = () => {
   const manualEnabled = settings?.isEnabled && settings?.upiId;
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-8">
+    <main className="customer-mobile-page min-h-screen bg-slate-50 px-4 py-8">
       <section className="mx-auto max-w-3xl space-y-6">
-        <div className="flex items-center justify-between gap-4">
+        <div className="mobile-page-heading flex items-center justify-between gap-4">
           <div>
             <p className="text-sm font-medium uppercase tracking-wide text-emerald-700">Payment</p>
             <h1 className="text-3xl font-semibold text-slate-950">Pay for your order</h1>
@@ -140,7 +140,7 @@ export const Payment = () => {
           <p className="rounded-lg border border-slate-200 bg-white p-5 text-sm text-slate-600">Loading payment options...</p>
         ) : (
           <>
-            <section className="rounded-lg border border-emerald-200 bg-white p-6 shadow-sm">
+            <section className="payment-option-card rounded-lg border border-emerald-200 bg-white p-6 shadow-sm">
               <div className="mb-5">
                 <p className="text-sm font-medium uppercase tracking-wide text-emerald-700">Recommended</p>
                 <h2 className="text-xl font-semibold text-slate-950">Cashfree UPI or Card</h2>
@@ -194,7 +194,7 @@ export const Payment = () => {
               )}
             </section>
 
-            <section className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+            <section className="payment-option-card rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
               <div className="mb-5">
                 <p className="text-sm font-medium uppercase tracking-wide text-slate-500">Fallback</p>
                 <h2 className="text-xl font-semibold text-slate-950">Manual UPI verification</h2>

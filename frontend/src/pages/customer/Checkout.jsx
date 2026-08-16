@@ -54,9 +54,9 @@ export const Checkout = () => {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-8">
+    <main className="customer-mobile-page min-h-screen bg-slate-50 px-4 py-8">
       <section className="mx-auto max-w-5xl">
-        <div className="mb-6 flex items-center justify-between gap-4">
+        <div className="mobile-page-heading mb-6 flex items-center justify-between gap-4">
           <div>
             <p className="text-sm font-medium uppercase tracking-wide text-emerald-700">Customer</p>
             <h1 className="text-3xl font-semibold text-slate-950">Checkout</h1>
@@ -75,9 +75,9 @@ export const Checkout = () => {
           <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
             <section className="space-y-4">
               {cart.items.map((item) => (
-                <article key={item.menuItem?._id || item.menuItem} className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-                  <div className="flex gap-4">
-                    <div className="h-20 w-20 shrink-0 rounded-md bg-slate-100">
+                <article key={item.menuItem?._id || item.menuItem} className="checkout-item rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+                  <div className="checkout-item__row flex gap-4">
+                    <div className="checkout-item__image h-20 w-20 shrink-0 rounded-md bg-slate-100">
                       {item.imageSnapshot && <img className="h-full w-full rounded-md object-cover" src={item.imageSnapshot} alt={item.nameSnapshot} />}
                     </div>
                     <div className="min-w-0 flex-1">
@@ -108,7 +108,7 @@ export const Checkout = () => {
                         </button>
                       </div>
                     </div>
-                    <div className="text-sm font-semibold text-slate-950">
+                    <div className="checkout-item__total text-sm font-semibold text-slate-950">
                       ₹{(item.offerPriceSnapshot ?? item.priceSnapshot) * item.quantity}
                     </div>
                   </div>
@@ -116,7 +116,7 @@ export const Checkout = () => {
               ))}
             </section>
 
-            <aside className="h-fit rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+            <aside className="checkout-summary h-fit rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
               <h2 className="text-lg font-semibold text-slate-950">Summary</h2>
               <div className="mt-3 text-sm text-slate-600">{cart.branch?.name}</div>
               <label className="mt-4 block text-sm font-medium">
@@ -148,7 +148,7 @@ export const Checkout = () => {
                 <span>Total</span>
                 <span>₹{cart.subtotal}</span>
               </div>
-              <button className="mt-4 w-full rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white" onClick={submitCheckout} type="button">
+              <button className="checkout-summary__submit mt-4 w-full rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white" onClick={submitCheckout} type="button">
                 Place Order
               </button>
               <button className="mt-2 w-full rounded-md border border-slate-300 px-4 py-2 text-sm font-medium" onClick={() => dispatch(clearCart())} type="button">

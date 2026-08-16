@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import SafeImage from "./SafeImage";
 
-const DashboardHeader = ({ user, cartCount, onLogout }) => {
+const DashboardHeader = ({ user, cartCount, branchName, onLogout }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const initial = user?.name?.trim()?.charAt(0)?.toUpperCase() || "H";
   const closeMenu = () => setMenuOpen(false);
@@ -10,10 +10,13 @@ const DashboardHeader = ({ user, cartCount, onLogout }) => {
   return (
     <header className="customer-header">
       <div className="customer-header__inner">
-        <Link to="/" className="customer-brand" onClick={closeMenu} aria-label="Healthiffy home">
-          <span className="customer-brand__mark" aria-hidden="true">H</span>
-          <span>Healthiffy</span>
-        </Link>
+        <div className="customer-header__identity">
+          <Link to="/" className="customer-brand" onClick={closeMenu} aria-label="Healthiffy home">
+            <span className="customer-brand__mark" aria-hidden="true">H</span>
+            <span>Healthiffy</span>
+          </Link>
+          <span className="customer-header__location">{branchName || 'Select your branch'}</span>
+        </div>
 
         <button
           type="button"

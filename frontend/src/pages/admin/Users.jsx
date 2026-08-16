@@ -17,7 +17,7 @@ export const Users = () => {
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-8">
       <section className="mx-auto max-w-7xl">
-        <div className="mb-6 flex items-end justify-between gap-4">
+        <div className="mobile-page-heading mb-6 flex items-end justify-between gap-4">
           <div>
             <p className="text-sm font-medium uppercase tracking-wide text-emerald-700">Admin</p>
             <h1 className="text-3xl font-semibold text-slate-950">Users</h1>
@@ -37,13 +37,13 @@ export const Users = () => {
               <tbody className="divide-y divide-slate-200">
                 {users.map((user) => (
                   <tr key={user._id}>
-                    <td className="px-4 py-3"><div className="font-medium">{user.name}</div><div className="text-xs text-slate-500">{user.email}</div></td>
-                    <td className="px-4 py-3">{user.role}</td>
-                    <td className="px-4 py-3">{user.assignedBranch?.name || '-'}</td>
-                    <td className="px-4 py-3">{user.paymentSummary?.successfulPaymentCount || 0}</td>
-                    <td className="px-4 py-3">₹{user.paymentSummary?.totalPaidAmount || 0}</td>
-                    <td className="px-4 py-3">{user.isActive ? 'Active' : 'Inactive'}</td>
-                    <td className="px-4 py-3"><button className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium" onClick={() => dispatch(updateUser({ id: user._id, payload: { isActive: !user.isActive } }))}>{user.isActive ? 'Deactivate' : 'Activate'}</button></td>
+                    <td data-label="User" className="px-4 py-3"><div className="font-medium">{user.name}</div><div className="text-xs text-slate-500">{user.email}</div></td>
+                    <td data-label="Role" className="px-4 py-3">{user.role}</td>
+                    <td data-label="Branch" className="px-4 py-3">{user.assignedBranch?.name || '-'}</td>
+                    <td data-label="Payments" className="px-4 py-3">{user.paymentSummary?.successfulPaymentCount || 0}</td>
+                    <td data-label="Lifetime paid" className="px-4 py-3">₹{user.paymentSummary?.totalPaidAmount || 0}</td>
+                    <td data-label="Status" className="px-4 py-3">{user.isActive ? 'Active' : 'Inactive'}</td>
+                    <td data-label="Actions" className="px-4 py-3"><button className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium" onClick={() => dispatch(updateUser({ id: user._id, payload: { isActive: !user.isActive } }))}>{user.isActive ? 'Deactivate' : 'Activate'}</button></td>
                   </tr>
                 ))}
               </tbody>

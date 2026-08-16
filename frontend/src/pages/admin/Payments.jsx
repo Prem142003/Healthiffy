@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchAdminBranches } from '../../redux/slices/branchSlice';
 import { fetchPayments } from '../../redux/slices/paymentSlice';
@@ -12,6 +12,13 @@ export const Payments = () => {
   const { branches } = useSelector((state) => state.branches);
   const { workers } = useSelector((state) => state.users);
   const [filters, setFilters] = useState({ date: '', branch: '', worker: '', status: '' });
+
+  const verifiedTotal = useMemo(
+    () => payments
+      .filter((payment) => ['VERIFIED', 'PAID'].includes(payment.status))
+      .reduce((total, payment) => total + Number(payment.amount || 0), 0),
+    [payments]
+  );
 
   useEffect(() => {
     dispatch(fetchAdminBranches({ limit: 100 }));
@@ -100,24 +107,24 @@ export const Payments = () => {
                 <tbody className="divide-y divide-slate-200">
                   {payments.map((payment) => (
                     <tr key={payment._id}>
-                      <td className="px-4 py-3">{formatDateTime(payment.createdAt)}</td>
-                      <td className="px-4 py-3">
+                      <td data-label="Time" className="px-4 py-3">{formatDateTime(payment.createdAt)}</td>
+                      <td data-label="Customer" className="px-4 py-3">
                         <div className="font-medium text-slate-950">{payment.customer?.name}</div>
                         <div className="text-xs text-slate-500">{payment.customer?.email}</div>
                       </td>
-                      <td className="px-4 py-3">{payment.order?.orderNumber || payment.order?._id}</td>
-                      <td className="px-4 py-3">{payment.branch?.name}</td>
-                      <td className="px-4 py-3">₹{payment.amount}</td>
-                      <td className="px-4 py-3">
+                      <td data-label="Order" className="px-4 py-3">{payment.order?.orderNumber || payment.order?._id}</td>
+                      <td data-label="Branch" className="px-4 py-3">{payment.branch?.name}</td>
+                      <td data-label="Amount" className="px-4 py-3">₹{payment.amount}</td>
+                      <td data-label="Method" className="px-4 py-3">
                         <div>{payment.method}</div>
                         <div className="text-xs text-slate-500">{payment.provider}</div>
                       </td>
-                      <td className="px-4 py-3">
+                      <td data-label="Status" className="px-4 py-3">
                         <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">{payment.status}</span>
                       </td>
-                      <td className="px-4 py-3">{payment.verifiedBy?.name || '-'}</td>
-                      <td className="px-4 py-3">{formatDateTime(payment.verifiedAt)}</td>
-                      <td className="px-4 py-3">
+                      <td data-label="Verified by" className="px-4 py-3">{payment.verifiedBy?.name || '-'}</td>
+                      <td data-label="Verified at" className="px-4 py-3">{formatDateTime(payment.verifiedAt)}</td>
+                      <td data-label="Proof" className="px-4 py-3">
                         <div>{payment.transactionReference || 'No reference'}</div>
                         {payment.screenshot?.url && <a className="text-xs font-medium text-emerald-700" href={payment.screenshot.url} target="_blank" rel="noreferrer">View screenshot</a>}
                       </td>
@@ -128,6 +135,12 @@ export const Payments = () => {
             </div>
           )}
         </section>
+        {payments.length ? (
+          <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4 sm:hidden">
+            <span className="text-sm text-emerald-700">Verified revenue in this view</span>
+            <strong className="mt-1 block text-2xl text-emerald-950">₹{verifiedTotal.toLocaleString('en-IN')}</strong>
+          </div>
+        ) : null}
       </section>
     </main>
   );
