@@ -174,7 +174,7 @@ export const Payment = () => {
                     </p>
                   )}
                   <button
-                    className="w-full rounded-md bg-emerald-700 px-4 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-slate-400"
+                    className="payment-primary-action w-full rounded-md bg-emerald-700 px-4 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-slate-400"
                     disabled={cashfreeBusy}
                     onClick={startCashfreePayment}
                     type="button"
@@ -183,7 +183,7 @@ export const Payment = () => {
                   </button>
                   {cashfreeState === 'processing' && (
                     <button
-                      className="w-full rounded-md border border-slate-300 px-4 py-2 text-sm font-medium"
+                      className="payment-secondary-action w-full rounded-md border border-slate-300 px-4 py-2 text-sm font-medium"
                       onClick={verifyCashfreePayment}
                       type="button"
                     >
@@ -222,7 +222,7 @@ export const Payment = () => {
                       Note
                       <textarea className="mt-1 min-h-20 w-full rounded-md border border-slate-300 px-3 py-2" value={customerNote} onChange={(event) => setCustomerNote(event.target.value)} />
                     </label>
-                    <button className="w-full rounded-md border border-emerald-700 px-4 py-2 text-sm font-semibold text-emerald-800" onClick={submitPayment} type="button">
+                    <button className="payment-primary-action w-full rounded-md border border-emerald-700 px-4 py-2 text-sm font-semibold text-emerald-800" onClick={submitPayment} type="button">
                       I&apos;ve paid manually
                     </button>
                   </div>

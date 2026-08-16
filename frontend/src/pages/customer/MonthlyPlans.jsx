@@ -158,7 +158,7 @@ export const MonthlyPlans = () => {
                       </select>
                     </label>
                     <button
-                      className="mt-4 w-full rounded-md bg-emerald-700 px-4 py-3 text-sm font-semibold text-white disabled:bg-slate-400"
+                      className="subscription-primary-action mt-4 w-full rounded-md bg-emerald-700 px-4 py-3 text-sm font-semibold text-white disabled:bg-slate-400"
                       disabled={Boolean(busyPlan) || !selectedBranches[plan._id] || !cashfreeRef.current}
                       onClick={() => subscribe(plan)}
                       type="button"

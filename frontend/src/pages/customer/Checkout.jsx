@@ -83,24 +83,24 @@ export const Checkout = () => {
                     <div className="min-w-0 flex-1">
                       <h2 className="font-semibold text-slate-950">{item.nameSnapshot}</h2>
                       <p className="text-sm text-slate-600">₹{item.offerPriceSnapshot ?? item.priceSnapshot}</p>
-                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                      <div className="checkout-quantity-controls mt-3 flex flex-wrap items-center gap-2">
                         <button
-                          className="rounded-md border border-slate-300 px-3 py-1 text-sm"
+                          className="checkout-quantity-button rounded-md border border-slate-300 px-3 py-1 text-sm"
                           onClick={() => dispatch(updateCartItem({ menuItemId: item.menuItem?._id || item.menuItem, quantity: Math.max(item.quantity - 1, 1) }))}
                           type="button"
                         >
                           -
                         </button>
-                        <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
+                        <span className="checkout-quantity-value w-8 text-center text-sm font-medium">{item.quantity}</span>
                         <button
-                          className="rounded-md border border-slate-300 px-3 py-1 text-sm"
+                          className="checkout-quantity-button rounded-md border border-slate-300 px-3 py-1 text-sm"
                           onClick={() => dispatch(updateCartItem({ menuItemId: item.menuItem?._id || item.menuItem, quantity: item.quantity + 1 }))}
                           type="button"
                         >
                           +
                         </button>
                         <button
-                          className="rounded-md border border-red-200 px-3 py-1 text-sm font-medium text-red-700"
+                          className="checkout-remove-action rounded-md border border-red-200 px-3 py-1 text-sm font-medium text-red-700"
                           onClick={() => dispatch(removeCartItem(item.menuItem?._id || item.menuItem))}
                           type="button"
                         >
@@ -125,7 +125,7 @@ export const Checkout = () => {
                   {instructionOptions.map((instruction) => (
                     <button
                       key={instruction}
-                      className={`rounded-full border px-3 py-1 text-xs font-medium ${
+                      className={`checkout-instruction-chip rounded-full border px-3 py-1 text-xs font-medium ${
                         specialInstructions.includes(instruction)
                           ? 'border-emerald-700 bg-emerald-50 text-emerald-700'
                           : 'border-slate-300 text-slate-700'
@@ -151,7 +151,7 @@ export const Checkout = () => {
               <button className="checkout-summary__submit mt-4 w-full rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white" onClick={submitCheckout} type="button">
                 Place Order
               </button>
-              <button className="mt-2 w-full rounded-md border border-slate-300 px-4 py-2 text-sm font-medium" onClick={() => dispatch(clearCart())} type="button">
+              <button className="checkout-clear-action mt-2 w-full rounded-md border border-slate-300 px-4 py-2 text-sm font-medium" onClick={() => dispatch(clearCart())} type="button">
                 Clear Cart
               </button>
             </aside>

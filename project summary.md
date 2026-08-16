@@ -41,6 +41,8 @@
     "customer": "Compact location header, branch carousel, category scroller, horizontal menu cards, quantity controls, item-detail bottom sheet, floating cart summary, and responsive checkout, order, payment, tracking, and subscription pages",
     "worker": "Touch-friendly views for pending payment verification, monthly customers, and subscription delivery history while preserving assigned-branch restrictions",
     "admin": "Compact mobile overview, bottom navigation, full management menu, responsive forms, and labeled card layouts replacing horizontally overflowing tables",
+    "mobileActions": "Below 768px, primary customer actions use 58px touch targets with 18px text, worker verification and delivery actions use 60px touch targets with 18px text, and admin form/table actions use 52-54px touch targets with 16px text",
+    "mobileViewport": "frontend/index.html declares width=device-width with viewport-fit=cover so mobile browsers render at the real device width instead of shrinking a desktop-sized layout",
     "desktopCompatibility": "Existing desktop layouts and workflows remain available",
     "verifiedWidths": [320, 375, 390, 414, 768, 1024, 1280, 1440],
     "backendImpact": "None; the responsive redesign does not change APIs, database models, role permissions, or payment behavior"

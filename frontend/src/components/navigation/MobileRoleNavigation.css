@@ -46,7 +46,7 @@
     background: transparent;
     color: #607066;
     font-family: 'DM Sans', sans-serif;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 600;
     letter-spacing: 0;
     text-decoration: none;
@@ -188,8 +188,8 @@
   }
 
   .mobile-more-sheet__links a {
-    min-height: 52px;
-    padding: 12px;
+    min-height: 56px;
+    padding: 13px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -198,7 +198,7 @@
     border-radius: 6px;
     background: #fff;
     color: #153f2a;
-    font-size: 13px;
+    font-size: 16px;
     font-weight: 600;
     text-decoration: none;
   }
@@ -211,7 +211,7 @@
 
   .mobile-more-sheet__logout {
     width: 100%;
-    min-height: 48px;
+    min-height: 56px;
     margin-top: 16px;
     display: flex;
     align-items: center;
@@ -221,6 +221,7 @@
     border-radius: 999px;
     background: transparent;
     color: #b53c31;
+    font-size: 16px;
     font-weight: 600;
   }
 
@@ -237,7 +238,7 @@
 
 @media (max-width: 359px) {
   .mobile-role-nav__item {
-    font-size: 10px;
+    font-size: 12px;
   }
 
   .mobile-more-sheet__links {

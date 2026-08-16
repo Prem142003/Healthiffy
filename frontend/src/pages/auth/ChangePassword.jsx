@@ -40,7 +40,7 @@ export const ChangePassword = () => {
   };
 
   return (
-    <main className="mx-auto max-w-md space-y-6 px-4 py-8">
+    <main className="account-settings-page mx-auto max-w-md space-y-6 px-4 py-8">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 rounded-lg border border-slate-200 bg-white p-6">
         <h1 className="text-xl font-semibold">Account Settings</h1>
         <h2 className="font-semibold">Change Password</h2>

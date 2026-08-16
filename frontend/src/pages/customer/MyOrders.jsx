@@ -72,13 +72,13 @@ export const MyOrders = () => {
                     </div>
                   ))}
                 </div>
-                <div className="mt-4 flex flex-wrap gap-2">
+                <div className="order-card-actions mt-4 flex flex-wrap gap-2">
                   {['UNPAID', 'PROCESSING', 'REJECTED'].includes(order.paymentStatus) && (
-                    <Link className="rounded-md bg-emerald-700 px-3 py-2 text-sm font-medium text-white" to={`/payment/${order._id}`}>
+                    <Link className="order-primary-action rounded-md bg-emerald-700 px-3 py-2 text-sm font-medium text-white" to={`/payment/${order._id}`}>
                       {order.paymentStatus === 'PROCESSING' ? 'Continue Payment' : 'Pay Now'}
                     </Link>
                   )}
-                  <Link className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium" to={`/orders/${order._id}/track`}>
+                  <Link className="order-secondary-action rounded-md border border-slate-300 px-3 py-2 text-sm font-medium" to={`/orders/${order._id}/track`}>
                     View Status
                   </Link>
                 </div>
