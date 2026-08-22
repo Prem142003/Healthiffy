@@ -1,9 +1,12 @@
 import { PAYMENT_STATUS } from '../constants/order.constants.js';
+import { CUSTOMER_PAYMENT_MODE } from '../constants/payment.constants.js';
+import { env } from '../config/env.config.js';
 import { generateOrderNumber } from '../helpers/orderNumber.helper.js';
 import { Branch } from '../models/Branch.model.js';
 import { MenuItem } from '../models/MenuItem.model.js';
 import { Order } from '../models/Order.model.js';
 import { AppError } from '../utils/AppError.js';
+import { createCounterPayment } from './counterPayment.service.js';
 
 const getPagination = (query) => {
   const page = Math.max(Number(query.page) || 1, 1);
@@ -81,6 +84,15 @@ export const createOrder = async (payload, customerId) => {
     totalAmount: subtotal,
     specialInstructions: payload.specialInstructions
   });
+
+  if (env.customerPaymentMode === CUSTOMER_PAYMENT_MODE.PAY_AT_COUNTER) {
+    try {
+      await createCounterPayment({ order, customerId });
+    } catch (error) {
+      await Order.deleteOne({ _id: order._id });
+      throw error;
+    }
+  }
 
   return getOrderById(order._id, { requesterId: customerId, isAdmin: false });
 };

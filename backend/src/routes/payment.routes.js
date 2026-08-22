@@ -6,6 +6,7 @@ import {
   getPublicPaymentSettingsHandler,
   listPaymentsHandler,
   rejectPaymentHandler,
+  selectCounterPaymentHandler,
   submitManualPaymentHandler,
   updatePaymentSettingsHandler,
   verifyPaymentHandler
@@ -20,6 +21,12 @@ const workerOnly = [authenticate, authorizeRoles(ROLES.WORKER)];
 
 router.get('/settings/public', getPublicPaymentSettingsHandler);
 router.patch('/settings', adminOnly, updatePaymentSettingsHandler);
+router.post(
+  '/orders/:orderId/pay-at-counter',
+  authenticate,
+  authorizeRoles(ROLES.CUSTOMER),
+  selectCounterPaymentHandler
+);
 router.post(
   '/orders/:orderId/cashfree/session',
   authenticate,

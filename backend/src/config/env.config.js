@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import { CUSTOMER_PAYMENT_MODE } from '../constants/payment.constants.js';
 
 dotenv.config();
 
@@ -42,6 +43,15 @@ if (isProduction) {
 
 const clientUrl = firstDefined('FRONTEND_URL', 'CLIENT_URL') || 'http://localhost:5173';
 const cashfreeEnvironment = (process.env.CASHFREE_ENV || 'sandbox').trim().toLowerCase();
+const customerPaymentMode = (
+  process.env.CUSTOMER_PAYMENT_MODE || CUSTOMER_PAYMENT_MODE.PAY_AT_COUNTER
+).trim().toUpperCase();
+
+if (!Object.values(CUSTOMER_PAYMENT_MODE).includes(customerPaymentMode)) {
+  throw new Error(
+    `CUSTOMER_PAYMENT_MODE must be one of: ${Object.values(CUSTOMER_PAYMENT_MODE).join(', ')}`
+  );
+}
 
 export const env = {
   nodeEnv: process.env.NODE_ENV || 'development',
@@ -74,5 +84,6 @@ export const env = {
     webhookUrl: process.env.CASHFREE_WEBHOOK_URL,
     isConfigured: Boolean(process.env.CASHFREE_APP_ID && process.env.CASHFREE_SECRET_KEY)
   },
+  customerPaymentMode,
   isProduction
 };

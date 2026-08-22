@@ -5,6 +5,7 @@ import {
   getPaymentSettings,
   getPayments,
   rejectPayment,
+  selectCounterPayment,
   submitManualPayment,
   syncCashfreePaymentStatus,
   updatePaymentSettings,
@@ -42,6 +43,14 @@ export const submitManualPaymentHandler = catchAsync(async (req, res) => {
     payload
   });
   sendSuccess(res, 201, 'Payment submitted for verification', { payment });
+});
+
+export const selectCounterPaymentHandler = catchAsync(async (req, res) => {
+  const payment = await selectCounterPayment({
+    orderId: req.params.orderId,
+    customerId: req.user._id
+  });
+  sendSuccess(res, 201, 'Pay at Counter selected', { payment });
 });
 
 export const createCashfreeSessionHandler = catchAsync(async (req, res) => {

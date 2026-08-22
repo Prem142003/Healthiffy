@@ -3,6 +3,8 @@ import { api } from './api';
 export const paymentApi = {
   getPublicSettings: () => api.get('/payments/settings/public'),
   updateSettings: (payload) => api.patch('/payments/settings', payload),
+  selectPayAtCounter: (orderId) =>
+    api.post(`/payments/orders/${orderId}/pay-at-counter`),
   createCashfreeSession: (orderId, payload) =>
     api.post(`/payments/orders/${orderId}/cashfree/session`, payload),
   getCashfreeStatus: (orderId) =>

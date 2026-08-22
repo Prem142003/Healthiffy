@@ -8,6 +8,7 @@ import {
   removeCartItem,
   updateCartItem
 } from '../../redux/slices/cartSlice';
+import { fetchPaymentSettings } from '../../redux/slices/paymentSlice';
 
 const instructionOptions = [
   'Less Sugar',
@@ -26,19 +27,30 @@ export const Checkout = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { cart, status, error } = useSelector((state) => state.cart);
+  const { settings: paymentSettings } = useSelector((state) => state.payments);
   const [specialInstructions, setSpecialInstructions] = useState('');
   const [success, setSuccess] = useState('');
 
   useEffect(() => {
     dispatch(fetchCart());
+    dispatch(fetchPaymentSettings());
   }, [dispatch]);
 
   const submitCheckout = async () => {
     setSuccess('');
     const result = await dispatch(checkoutCart({ specialInstructions }));
     if (checkoutCart.fulfilled.match(result)) {
-      setSuccess(`Order ${result.payload.order.orderNumber} placed successfully.`);
-      setTimeout(() => navigate(`/payment/${result.payload.order._id}`), 800);
+      const order = result.payload.order;
+      const isCounterPayment = order.payment?.method === 'PAY_AT_COUNTER';
+      setSuccess(
+        isCounterPayment
+          ? `Order ${order.orderNumber} placed. Payment is pending at the counter.`
+          : `Order ${order.orderNumber} placed successfully.`
+      );
+      setTimeout(
+        () => navigate(isCounterPayment ? `/orders/${order._id}/track` : `/payment/${order._id}`),
+        800
+      );
     }
   };
 
@@ -52,6 +64,8 @@ export const Checkout = () => {
       : [...current, instruction];
     setSpecialInstructions(next.join(', '));
   };
+
+  const counterOnly = paymentSettings?.customerPaymentMode === 'PAY_AT_COUNTER';
 
   return (
     <main className="customer-mobile-page min-h-screen bg-slate-50 px-4 py-8">
@@ -148,8 +162,21 @@ export const Checkout = () => {
                 <span>Total</span>
                 <span>₹{cart.subtotal}</span>
               </div>
-              <button className="checkout-summary__submit mt-4 w-full rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white" onClick={submitCheckout} type="button">
-                Place Order
+              {counterOnly && (
+                <div className="mt-4 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3">
+                  <div className="text-sm font-semibold text-emerald-950">Pay at Counter</div>
+                  <p className="mt-1 text-sm text-emerald-800">
+                    Pay at your branch counter. A worker will verify the payment there.
+                  </p>
+                </div>
+              )}
+              <button
+                className="checkout-summary__submit mt-4 min-h-14 w-full rounded-md bg-emerald-700 px-4 py-3 text-base font-semibold text-white disabled:cursor-not-allowed disabled:bg-slate-400"
+                disabled={status === 'loading'}
+                onClick={submitCheckout}
+                type="button"
+              >
+                {counterOnly ? 'PLACE ORDER — PAY AT COUNTER' : 'Place Order'}
               </button>
               <button className="checkout-clear-action mt-2 w-full rounded-md border border-slate-300 px-4 py-2 text-sm font-medium" onClick={() => dispatch(clearCart())} type="button">
                 Clear Cart

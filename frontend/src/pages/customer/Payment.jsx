@@ -22,6 +22,7 @@ export const Payment = () => {
   const [success, setSuccess] = useState('');
   const [cashfreeMessage, setCashfreeMessage] = useState('');
   const [cashfreeState, setCashfreeState] = useState('idle');
+  const [counterBusy, setCounterBusy] = useState(false);
   const cashfreeRef = useRef(null);
 
   useEffect(() => {
@@ -33,13 +34,28 @@ export const Payment = () => {
   }, [user?.phone]);
 
   useEffect(() => {
+    if (settings?.customerPaymentMode === 'PAY_AT_COUNTER') return;
     if (!settings?.cashfree?.enabled) return;
     try {
       cashfreeRef.current = initializeCashfree(settings.cashfree.environment);
     } catch (sdkError) {
       setCashfreeMessage(sdkError.message);
     }
-  }, [settings?.cashfree?.enabled, settings?.cashfree?.environment]);
+  }, [settings?.cashfree?.enabled, settings?.cashfree?.environment, settings?.customerPaymentMode]);
+
+  const selectPayAtCounter = async () => {
+    try {
+      setCounterBusy(true);
+      setSuccess('');
+      await paymentApi.selectPayAtCounter(orderId);
+      setSuccess('Order placed. Payment is pending at the counter.');
+      setTimeout(() => navigate(`/orders/${orderId}/track`), 700);
+    } catch (paymentError) {
+      setCashfreeMessage(getApiError(paymentError));
+    } finally {
+      setCounterBusy(false);
+    }
+  };
 
   const verifyCashfreePayment = async () => {
     setCashfreeState('verifying');
@@ -121,6 +137,7 @@ export const Payment = () => {
 
   const cashfreeBusy = ['creating', 'checkout', 'verifying'].includes(cashfreeState);
   const manualEnabled = settings?.isEnabled && settings?.upiId;
+  const counterOnly = settings?.customerPaymentMode === 'PAY_AT_COUNTER';
 
   return (
     <main className="customer-mobile-page min-h-screen bg-slate-50 px-4 py-8">
@@ -133,11 +150,31 @@ export const Payment = () => {
           <Link className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium" to="/my-orders">Orders</Link>
         </div>
 
-        {error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+        {(error || (counterOnly && cashfreeMessage)) && (
+          <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+            {error || cashfreeMessage}
+          </p>
+        )}
         {success && <p className="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{success}</p>}
 
         {status === 'loading' && !settings ? (
           <p className="rounded-lg border border-slate-200 bg-white p-5 text-sm text-slate-600">Loading payment options...</p>
+        ) : counterOnly ? (
+          <section className="payment-option-card rounded-lg border border-emerald-200 bg-white p-6 shadow-sm sm:p-8">
+            <p className="text-sm font-medium uppercase tracking-wide text-emerald-700">Payment method</p>
+            <h2 className="mt-1 text-2xl font-semibold text-slate-950">Pay at Counter</h2>
+            <p className="mt-3 text-base leading-7 text-slate-600">
+              Place the order now and pay at your branch counter. Your payment will remain pending until an authorized worker verifies it.
+            </p>
+            <button
+              className="payment-primary-action mt-6 min-h-14 w-full rounded-md bg-emerald-700 px-5 py-3 text-base font-semibold text-white disabled:cursor-not-allowed disabled:bg-slate-400 sm:text-lg"
+              disabled={counterBusy}
+              onClick={selectPayAtCounter}
+              type="button"
+            >
+              {counterBusy ? 'PLACING ORDER...' : 'PLACE ORDER — PAY AT COUNTER'}
+            </button>
+          </section>
         ) : (
           <>
             <section className="payment-option-card rounded-lg border border-emerald-200 bg-white p-6 shadow-sm">

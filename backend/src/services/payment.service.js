@@ -1,9 +1,11 @@
 import { PAYMENT_STATUS } from '../constants/order.constants.js';
 import {
   CASHFREE_ORDER_STATUS,
+  CUSTOMER_PAYMENT_MODE,
   PAYMENT_METHOD,
   PAYMENT_PROVIDER
 } from '../constants/payment.constants.js';
+import { env } from '../config/env.config.js';
 import { Payment } from '../models/Payment.model.js';
 import { PaymentSetting } from '../models/PaymentSetting.model.js';
 import { Order } from '../models/Order.model.js';
@@ -17,8 +19,15 @@ import {
   getCashfreePublicSettings
 } from './cashfree.service.js';
 import { confirmPayment } from './paymentConfirmation.service.js';
+import { createCounterPayment } from './counterPayment.service.js';
 
 const getAssignedBranchId = (user) => user.assignedBranch?._id || user.assignedBranch;
+
+const assertOnlineOrderPaymentsEnabled = () => {
+  if (env.customerPaymentMode === CUSTOMER_PAYMENT_MODE.PAY_AT_COUNTER) {
+    throw new AppError('Online payments are temporarily unavailable. Please pay at the counter.', 403);
+  }
+};
 
 const populatePayment = (query) =>
   query
@@ -40,6 +49,7 @@ export const getPaymentSettings = async () => {
     upiId: settings?.upiId || '',
     qrCode: settings?.qrCode,
     isEnabled: settings?.isEnabled ?? true,
+    customerPaymentMode: env.customerPaymentMode,
     cashfree: getCashfreePublicSettings()
   };
 };
@@ -61,6 +71,8 @@ export const updatePaymentSettings = async (payload, userId) => {
 };
 
 export const submitManualPayment = async ({ orderId, customerId, payload }) => {
+  assertOnlineOrderPaymentsEnabled();
+
   const [order, settings] = await Promise.all([
     Order.findOne({ _id: orderId, customer: customerId }),
     PaymentSetting.findOne().sort('-updatedAt')
@@ -125,6 +137,8 @@ const safeCashfreeSession = (payment) => ({
 });
 
 export const createCashfreeSession = async ({ orderId, user, customerPhone }) => {
+  assertOnlineOrderPaymentsEnabled();
+
   const order = await Order.findById(orderId).populate('customer', 'name email phone');
   if (!order) throw new AppError('Order not found', 404);
   assertOrderPaymentAccess(order, user);
@@ -217,6 +231,8 @@ export const createCashfreeSession = async ({ orderId, user, customerPhone }) =>
 };
 
 export const syncCashfreePaymentStatus = async ({ orderId, user }) => {
+  assertOnlineOrderPaymentsEnabled();
+
   const order = await Order.findById(orderId);
   if (!order) throw new AppError('Order not found', 404);
   assertOrderPaymentAccess(order, user);
@@ -279,6 +295,18 @@ export const syncCashfreePaymentStatus = async ({ orderId, user }) => {
     providerStatus,
     payment: await populatePayment(Payment.findById(payment._id))
   };
+};
+
+export const selectCounterPayment = async ({ orderId, customerId }) => {
+  if (env.customerPaymentMode !== CUSTOMER_PAYMENT_MODE.PAY_AT_COUNTER) {
+    throw new AppError('Pay at Counter is not currently available', 409);
+  }
+
+  const order = await Order.findOne({ _id: orderId, customer: customerId });
+  if (!order) throw new AppError('Order not found', 404);
+
+  const payment = await createCounterPayment({ order, customerId });
+  return populatePayment(Payment.findById(payment._id));
 };
 
 export const getPayments = async (query = {}, user) => {
