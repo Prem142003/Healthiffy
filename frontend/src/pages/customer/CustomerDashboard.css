@@ -1367,14 +1367,20 @@
   }
 
   .branch-selector {
-    margin-right: -16px;
-    padding-right: 16px;
-    scroll-snap-type: x proximity;
+    width: 100%;
+    margin-right: 0;
+    padding-right: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    overflow-x: visible;
+    scroll-snap-type: none;
   }
 
   .branch-selector button {
-    width: 248px;
-    min-width: 248px;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
     min-height: 86px;
     padding: 8px;
     display: grid;
@@ -1382,7 +1388,6 @@
     align-items: center;
     gap: 12px;
     border-radius: 8px;
-    scroll-snap-align: start;
     transition: transform 160ms ease, box-shadow 160ms ease;
   }
 
@@ -1402,13 +1407,21 @@
     object-fit: cover;
   }
 
+  .branch-selector__copy {
+    min-width: 0;
+  }
+
+  .branch-selector__copy strong {
+    overflow-wrap: anywhere;
+  }
+
   .branch-selector__copy small {
-    max-width: 145px;
+    max-width: 100%;
     margin-top: 5px;
+    overflow: visible;
+    text-overflow: clip;
     white-space: normal;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
+    overflow-wrap: anywhere;
   }
 
   .category-tabs {
