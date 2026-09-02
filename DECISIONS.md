@@ -9,7 +9,7 @@ Accepted
 The repository treats backend payment confirmation and Cashfree webhook verification as authoritative rather than trusting frontend checkout success alone.
 
 ### Reason
-Verified in the payment service and webhook controller: [backend/src/services/paymentConfirmation.service.js](backend/src/services/paymentConfirmation.service.js), [backend/src/services/cashfreeWebhook.service.js](backend/src/services/cashfreeWebhook.service.js), and [backend/src/controllers/payment.controller.js](backend/src/controllers/payment.controller.js).
+Reason not established in repository.
 
 ### Consequences
 Future agents must verify payment state in backend logic before acting on payment success or failure. Frontend-only success states are not enough.
@@ -28,7 +28,7 @@ Accepted
 The backend enforces role checks in middleware and route definitions instead of relying on the frontend to hide features.
 
 ### Reason
-Verified in [backend/src/middlewares/auth.middleware.js](backend/src/middlewares/auth.middleware.js), [backend/src/middlewares/role.middleware.js](backend/src/middlewares/role.middleware.js), and routes under [backend/src/routes](backend/src/routes).
+Reason not established in repository.
 
 ### Consequences
 Changes to roles, route access, or branch scoping require both backend verification and potential documentation updates for AUTH and ARCHITECTURE.
@@ -47,7 +47,7 @@ Accepted
 Worker access is restricted to an assigned branch for orders and subscription operations.
 
 ### Reason
-Verified in [backend/src/services/order.service.js](backend/src/services/order.service.js) and [backend/src/services/subscription.service.js](backend/src/services/subscription.service.js).
+Reason not established in repository.
 
 ### Consequences
 Any change to worker assignment or branch-specific permissions must be validated in source and may require documentation updates.
@@ -66,7 +66,7 @@ Accepted
 Socket.IO rooms are organized by user, admin, and worker branch.
 
 ### Reason
-Verified in [backend/src/sockets/socket.config.js](backend/src/sockets/socket.config.js) and [backend/src/sockets/socket.server.js](backend/src/sockets/socket.server.js).
+Reason not established in repository.
 
 ### Consequences
 Realtime feature work should consider room membership and event payload semantics before modifying websocket code.

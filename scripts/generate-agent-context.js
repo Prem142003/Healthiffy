@@ -18,7 +18,7 @@ const EXCLUDED_DIRS = new Set([
   '.parcel-cache'
 ]);
 
-const SOURCE_FILE_EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx']);
+const SOURCE_FILE_EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx', '.css']);
 
 const REPO_ROOTS = [
   'backend/src/config',
@@ -43,7 +43,7 @@ const REPO_ROOTS = [
 
 const isSourceFile = (fileName) => SOURCE_FILE_EXTENSIONS.has(path.extname(fileName).toLowerCase());
 
-const walkDirectory = (directory, depth = 0, maxDepth = 3) => {
+const walkDirectory = (directory, depth = 0) => {
   if (!fs.existsSync(directory)) return [];
 
   const entries = fs
@@ -61,12 +61,8 @@ const walkDirectory = (directory, depth = 0, maxDepth = 3) => {
     const absolutePath = path.join(directory, entry.name);
 
     if (entry.isDirectory()) {
-      if (depth < maxDepth) {
-        lines.push(`${'  '.repeat(depth)}- ${entry.name}/`);
-        lines.push(...walkDirectory(absolutePath, depth + 1, maxDepth));
-      } else {
-        lines.push(`${'  '.repeat(depth)}- ${entry.name}/`);
-      }
+      lines.push(`${'  '.repeat(depth)}- ${entry.name}/`);
+      lines.push(...walkDirectory(absolutePath, depth + 1));
       continue;
     }
 
@@ -78,15 +74,13 @@ const walkDirectory = (directory, depth = 0, maxDepth = 3) => {
   return lines;
 };
 
-const renderRootSection = (title, rootPath) => {
+const renderRootSection = (rootPath) => {
   const relativeRoot = path.relative(root, rootPath);
-  const lines = [`## ${title}`];
+  const lines = [`### ${relativeRoot}`];
 
   if (fs.existsSync(rootPath)) {
-    lines.push(`### ${relativeRoot}`);
-    lines.push(...walkDirectory(rootPath, 1, 3));
+    lines.push(...walkDirectory(rootPath));
   } else {
-    lines.push(`### ${relativeRoot}`);
     lines.push('- Not present in repository');
   }
 
@@ -120,9 +114,9 @@ const keyFiles = [
 ];
 
 const sections = [
-  renderRootSection('Backend', path.join(root, 'backend', 'src')),
-  renderRootSection('Frontend', path.join(root, 'frontend', 'src')),
-  '## Key files',
+  '## Selected source areas',
+  ...REPO_ROOTS.map((repoRoot) => renderRootSection(path.join(root, repoRoot))),
+  '## Entry points and key integrations',
   ...keyFiles.map((file) => `- ${file}`)
 ].join('\n\n');
 
