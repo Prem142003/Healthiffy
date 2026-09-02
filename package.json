@@ -10,7 +10,8 @@
     "seed:admin": "npm run seed:admin --workspace backend",
     "docker:up": "docker compose up --build",
     "docker:down": "docker compose down",
-    "docker:seed": "docker compose run --rm backend npm run seed:admin"
+    "docker:seed": "docker compose run --rm backend npm run seed:admin",
+    "update:agent-context": "node scripts/generate-agent-context.js"
   },
   "workspaces": [
     "backend",
