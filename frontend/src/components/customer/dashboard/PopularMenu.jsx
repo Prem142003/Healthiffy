@@ -1,4 +1,4 @@
-import SafeImage from "./SafeImage";
+import { MenuCard } from '../MenuCard';
 
 const PopularMenu = ({ items, loading, onAdd }) => (
   <section className="dashboard-section" aria-labelledby="popular-menu-title">
@@ -16,27 +16,7 @@ const PopularMenu = ({ items, loading, onAdd }) => (
       </div>
     ) : items.length ? (
       <div className="popular-menu-grid">
-        {items.map((item) => (
-          <article className="popular-menu-card" key={item._id}>
-            <SafeImage
-              src={item.image?.url || item.image}
-              alt={item.name}
-              className="popular-menu-card__image"
-              fallback="HF"
-            />
-            <div className="popular-menu-card__body">
-              <div>
-                <span className={`food-dot food-dot--${String(item.foodType || "veg").toLowerCase()}`} aria-label={item.foodType || "Food item"} />
-                <h3>{item.name}</h3>
-              </div>
-              <p>{item.description || "Freshly prepared at your selected Healthiffy cafe."}</p>
-              <div className="popular-menu-card__footer">
-                <strong>Rs. {Number(item.price || 0).toFixed(0)}</strong>
-                <button type="button" onClick={() => onAdd(item)}>Add</button>
-              </div>
-            </div>
-          </article>
-        ))}
+        {items.map((item) => <MenuCard key={item._id} item={item} variant="featured" onOrder={onAdd} />)}
       </div>
     ) : (
       <p className="dashboard-inline-message">Select a branch to see its most popular menu items.</p>

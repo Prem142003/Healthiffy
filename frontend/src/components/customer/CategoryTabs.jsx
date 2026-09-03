@@ -1,4 +1,4 @@
-export const CategoryTabs = ({ categories, selectedCategoryId, onSelectCategory }) => (
+export const CategoryTabs = ({ categories, selectedCategoryId, onSelectCategory, bestsellersOnly = false, onToggleBestsellers }) => (
   <div className="category-tabs" role="group" aria-label="Filter by category">
     <button
       className={!selectedCategoryId ? 'is-active' : ''}
@@ -8,6 +8,9 @@ export const CategoryTabs = ({ categories, selectedCategoryId, onSelectCategory 
     >
       All
     </button>
+    {onToggleBestsellers ? (
+      <button className={bestsellersOnly ? 'is-active' : ''} aria-pressed={bestsellersOnly} onClick={onToggleBestsellers} type="button">Bestsellers</button>
+    ) : null}
     {categories.map((category) => (
       <button
         key={category._id}

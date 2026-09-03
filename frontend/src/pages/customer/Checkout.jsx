@@ -9,6 +9,7 @@ import {
   updateCartItem
 } from '../../redux/slices/cartSlice';
 import { fetchPaymentSettings } from '../../redux/slices/paymentSlice';
+import './CustomerDashboard.css';
 
 const instructionOptions = [
   'Less Sugar',
@@ -68,7 +69,7 @@ export const Checkout = () => {
   const counterOnly = paymentSettings?.customerPaymentMode === 'PAY_AT_COUNTER';
 
   return (
-    <main className="customer-mobile-page min-h-screen bg-slate-50 px-4 py-8">
+    <main className="customer-app customer-mobile-page customer-checkout-page min-h-screen px-4 py-8">
       <section className="mx-auto max-w-5xl">
         <div className="mobile-page-heading mb-6 flex items-center justify-between gap-4">
           <div>
@@ -86,8 +87,8 @@ export const Checkout = () => {
         ) : !cart || cart.items.length === 0 ? (
           <p className="rounded-lg border border-slate-200 bg-white p-5 text-sm text-slate-600">Your cart is empty.</p>
         ) : (
-          <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-            <section className="space-y-4">
+          <div className="customer-checkout-layout grid gap-6 lg:grid-cols-[1fr_320px]">
+            <section className="customer-checkout-items space-y-4">
               {cart.items.map((item) => (
                 <article key={item.menuItem?._id || item.menuItem} className="checkout-item rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
                   <div className="checkout-item__row flex gap-4">

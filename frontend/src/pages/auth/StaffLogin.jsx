@@ -26,8 +26,9 @@ export const StaffLogin = () => {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold">Staff Login</h1>
-        <p className="mt-1 text-sm text-slate-600">Admin and worker access only.</p>
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#925e06]">Team access</p>
+        <h1 className="font-heading mt-2 text-3xl font-extrabold tracking-tight">Staff sign in</h1>
+        <p className="mt-2 text-base text-slate-600">Secure access for Healthiffy administrators and branch workers.</p>
       </div>
 
       {error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
@@ -42,11 +43,11 @@ export const StaffLogin = () => {
         <input className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" type="password" {...register('password', { required: true })} />
       </label>
 
-      <button className="w-full rounded-md bg-emerald-700 px-4 py-2 font-medium text-white disabled:opacity-60" disabled={status === 'loading'}>
+      <button className="w-full rounded-full bg-emerald-700 px-4 py-3.5 font-bold text-white shadow-md transition-colors hover:bg-emerald-800 disabled:opacity-60" disabled={status === 'loading'}>
         {status === 'loading' ? 'Logging in...' : 'Login'}
       </button>
 
-      <Link className="text-sm text-emerald-700" to="/login">Customer Google login</Link>
+      <Link className="inline-flex text-base font-bold text-emerald-700" to="/login">Customer Google login</Link>
     </form>
   );
 };

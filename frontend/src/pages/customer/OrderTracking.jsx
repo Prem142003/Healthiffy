@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { orderApi } from '../../services/orderApi';
 import { getSocket } from '../../services/socket';
+import './CustomerDashboard.css';
 
 export const OrderTracking = () => {
   const { orderId } = useParams();
@@ -40,7 +41,7 @@ export const OrderTracking = () => {
   const isCounterPayment = order?.payment?.method === 'PAY_AT_COUNTER';
 
   return (
-    <main className="customer-mobile-page min-h-screen bg-slate-50 px-4 py-8">
+    <main className="customer-app customer-mobile-page customer-tracking-page min-h-screen px-4 py-8">
       <section className="mx-auto max-w-3xl rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
         <div className="mobile-page-heading mb-6 flex items-center justify-between gap-4">
           <div>

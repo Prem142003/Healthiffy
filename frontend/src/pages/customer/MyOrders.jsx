@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchMyOrders } from '../../redux/slices/orderSlice';
+import './CustomerDashboard.css';
 
 export const MyOrders = () => {
   const dispatch = useDispatch();
@@ -18,7 +19,7 @@ export const MyOrders = () => {
   const paymentSummary = user?.paymentSummary || {};
 
   return (
-    <main className="customer-mobile-page min-h-screen bg-slate-50 px-4 py-8">
+    <main className="customer-app customer-mobile-page customer-orders-page min-h-screen px-4 py-8">
       <section className="mx-auto max-w-5xl">
         <div className="mobile-page-heading mb-6 flex items-center justify-between gap-4">
           <div>
@@ -30,16 +31,16 @@ export const MyOrders = () => {
 
         {error && <p className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
 
-        <div className="mb-6 grid gap-4 sm:grid-cols-3">
-          <div className="rounded-lg border border-slate-200 bg-white p-4">
+        <div className="customer-stats-grid mb-6 grid gap-4 sm:grid-cols-3">
+          <div className="customer-stat-card rounded-lg border border-slate-200 bg-white p-4">
             <div className="text-sm text-slate-500">Confirmed payments</div>
             <div className="mt-1 text-2xl font-semibold text-slate-950">{paymentSummary.successfulPaymentCount || 0}</div>
           </div>
-          <div className="rounded-lg border border-slate-200 bg-white p-4">
+          <div className="customer-stat-card rounded-lg border border-slate-200 bg-white p-4">
             <div className="text-sm text-slate-500">Lifetime paid</div>
             <div className="mt-1 text-2xl font-semibold text-slate-950">₹{paymentSummary.totalPaidAmount || 0}</div>
           </div>
-          <div className="rounded-lg border border-slate-200 bg-white p-4">
+          <div className="customer-stat-card rounded-lg border border-slate-200 bg-white p-4">
             <div className="text-sm text-slate-500">Last payment</div>
             <div className="mt-1 font-semibold text-slate-950">
               {paymentSummary.lastPaymentAt ? new Date(paymentSummary.lastPaymentAt).toLocaleString() : '-'}
@@ -52,9 +53,9 @@ export const MyOrders = () => {
         ) : orders.length === 0 ? (
           <p className="rounded-lg border border-slate-200 bg-white p-5 text-sm text-slate-600">No orders yet.</p>
         ) : (
-          <div className="space-y-4">
+          <div className="customer-order-list space-y-4">
             {orders.map((order) => (
-              <article key={order._id} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+              <article key={order._id} className="customer-order-card rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <h2 className="font-semibold text-slate-950">{order.orderNumber}</h2>

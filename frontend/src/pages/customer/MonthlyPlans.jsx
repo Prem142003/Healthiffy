@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 import { initializeCashfree } from '../../services/cashfree';
 import { paymentApi } from '../../services/paymentApi';
 import { subscriptionApi } from '../../services/subscriptionApi';
+import './CustomerDashboard.css';
 
 const apiError = (error) =>
   error.response?.data?.message || error.message || 'Unable to start subscription payment.';
@@ -95,7 +96,7 @@ export const MonthlyPlans = () => {
   };
 
   return (
-    <main className="customer-mobile-page min-h-screen bg-slate-50 px-4 py-8">
+    <main className="customer-app customer-mobile-page customer-plans-page min-h-screen px-4 py-8">
       <section className="mx-auto max-w-7xl">
         <div className="mobile-page-heading mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -128,11 +129,11 @@ export const MonthlyPlans = () => {
         ) : plans.length === 0 ? (
           <p className="rounded-lg border border-slate-200 bg-white p-5 text-sm text-slate-600">No monthly meal plans are available right now.</p>
         ) : (
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+          <div className="customer-plan-grid grid gap-5 md:grid-cols-2 xl:grid-cols-3">
             {plans.map((plan) => {
               const imageUrl = plan.image?.url || plan.menuItem?.image?.url;
               return (
-                <article key={plan._id} className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+                <article key={plan._id} className="customer-plan-card overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
                   {imageUrl ? (
                     <img className="aspect-[16/9] w-full object-cover" src={imageUrl} alt={plan.menuItem?.name || plan.name} />
                   ) : (

@@ -22,13 +22,14 @@ export const Login = () => {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-semibold">Continue to Healthiffy</h1>
-        <p className="mt-1 text-sm text-slate-600">Customers sign in securely with Google.</p>
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#925e06]">Customer account</p>
+        <h1 className="font-heading mt-2 text-3xl font-extrabold tracking-tight">Welcome to Healthiffy</h1>
+        <p className="mt-2 text-base leading-relaxed text-slate-600">Sign in securely with Google to order from your branch and manage meal plans.</p>
       </div>
 
       {(error || googleError) && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error || googleError}</p>}
 
-      <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-5">
         <GoogleLogin
           onSuccess={handleGoogleSuccess}
           onError={() => setGoogleError('Google login could not be completed. Please try again.')}
@@ -40,7 +41,7 @@ export const Login = () => {
 
       {status === 'loading' && <p className="text-sm text-slate-600">Signing you in...</p>}
 
-      <div className="border-t border-slate-200 pt-4 text-sm text-slate-600">
+      <div className="border-t border-slate-200 pt-5 text-base text-slate-600">
         Admin or worker? <Link className="font-medium text-emerald-700" to="/staff-login">Use staff login</Link>
       </div>
     </div>

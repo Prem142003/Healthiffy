@@ -127,12 +127,12 @@
   - AuthBootstrap.jsx
 - common/
   - ImageUploader.jsx
+  - RouteMetadata.jsx
 - customer/
   - BranchSelector.jsx
   - CategoryTabs.jsx
   - dashboard/
     - BranchSpotlight.jsx
-    - DashboardHeader.jsx
     - EmptyState.jsx
     - PopularMenu.jsx
     - QuickActions.jsx
@@ -142,7 +142,16 @@
     - WelcomeSection.jsx
   - MenuCard.jsx
   - MenuItemSheet.jsx
+- landing/
+  - BrandReveal.tsx
+  - HarvestScrollyHero.tsx
+  - LandingNavbar.tsx
+  - particles.ts
+  - SaladAssembly.tsx
+  - SceneBackground.tsx
+  - useLandingMedia.ts
 - navigation/
+  - AuthenticatedHeader.jsx
   - MobileRoleNavigation.css
   - MobileRoleNavigation.jsx
 - payments/
@@ -173,6 +182,7 @@
 - customer/
   - Checkout.jsx
   - CustomerDashboard.css
+  - CustomerDashboardPreview.jsx
   - CustomerHome.jsx
   - MonthlyPlans.jsx
   - MyOrders.jsx

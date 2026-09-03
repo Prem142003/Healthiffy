@@ -52,6 +52,7 @@ The repository implements a branch-based cafe order and delivery workflow with r
 ## Product goals
 
 - Keep ordering and branch operations simple for a cafe business.
+- Present Healthiffy as a pure vegetarian cafe; do not describe the offering as vegan. The public landing menu requests only `VEG` items. Repository-wide enforcement is not yet established because the backend food-type model still supports `NON_VEG`.
 - Restrict worker access to their assigned branch.
 - Keep payment confirmation tied to backend verification rather than trusting the frontend alone.
 - Support both online checkout and manual verification workflows.

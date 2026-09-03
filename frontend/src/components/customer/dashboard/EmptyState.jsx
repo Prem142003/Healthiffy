@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 const EmptyState = ({ title, message, actionLabel, actionHref, actionTo, onAction }) => (
   <div className="dashboard-empty-state">
-    <span className="dashboard-empty-state__mark" aria-hidden="true">H</span>
+    <span className="dashboard-empty-state__mark" aria-hidden="true">↗</span>
     <h3>{title}</h3>
     <p>{message}</p>
     {onAction ? (

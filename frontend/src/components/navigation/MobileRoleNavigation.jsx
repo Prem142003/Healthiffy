@@ -163,7 +163,7 @@ export const MobileRoleNavigation = () => {
       </nav>
 
       {moreOpen ? (
-        <div className="mobile-sheet-layer" id="mobile-more-sheet">
+        <div className={`mobile-sheet-layer mobile-sheet-layer--${role.toLowerCase()}`} id="mobile-more-sheet">
           <button
             className="mobile-sheet-layer__backdrop"
             type="button"

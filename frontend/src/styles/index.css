@@ -1,10 +1,296 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Manrope:wght@200..800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --healthiffy-forest: #102b20;
+  --healthiffy-moss: #365004;
+  --healthiffy-apple: #8da432;
+  --healthiffy-flax: #ede383;
+  --healthiffy-golden: #925e06;
+  --healthiffy-bistre: #351903;
+  --green-950: var(--healthiffy-moss);
+  --green-900: #304704;
+  --green-850: #3e5907;
+  --green-800: #496409;
+  --green-700: var(--healthiffy-moss);
+  --green-600: #496409;
+  --sage-500: var(--healthiffy-apple);
+  --sage-400: var(--healthiffy-apple);
+  --sage-300: var(--healthiffy-flax);
+  --cream-100: var(--healthiffy-flax);
+  --cream-50: #f4eca4;
+  --warm-accent: #6f4304;
+  --surface-page: var(--green-950);
+  --surface-deep: var(--green-900);
+  --surface-card: var(--green-850);
+  --surface-card-light: var(--sage-300);
+  --surface-elevated: var(--green-800);
+  --text-on-dark: var(--cream-50);
+  --text-on-dark-muted: rgba(237, 227, 131, 0.8);
+  --border-on-dark: rgba(237, 227, 131, 0.16);
+  --shadow-elevation-1: 0 6px 16px rgba(53, 25, 3, 0.13), inset 0 1px 0 rgba(237, 227, 131, 0.04);
+  --shadow-elevation-2: 0 14px 34px rgba(53, 25, 3, 0.2), inset 0 1px 0 rgba(237, 227, 131, 0.05);
+  --shadow-elevation-3: 0 22px 56px rgba(53, 25, 3, 0.28), inset 0 1px 0 rgba(237, 227, 131, 0.06);
+  --shadow-elevation-4: 0 32px 80px rgba(53, 25, 3, 0.34), inset 0 1px 0 rgba(237, 227, 131, 0.08);
+  --radius-card: 1.25rem;
+  --radius-feature: 2rem;
+  --radius-arch: 10rem 10rem 1.4rem 1.4rem;
+  --radius-pill: 999px;
+  --transition-ui: 220ms cubic-bezier(0.2, 0.75, 0.25, 1);
+  --color-canvas: var(--healthiffy-flax);
+  --color-canvas-light: #f4eca4;
+  --color-surface-card: #f7f0b1;
+  --color-ink-primary: var(--healthiffy-bistre);
+  --color-ink-soft: var(--healthiffy-moss);
+  --color-ink-muted: rgba(53, 25, 3, 0.75);
+  --color-harvest-green: var(--healthiffy-moss);
+  --color-harvest-green-hover: var(--healthiffy-apple);
+  --color-harvest-sage: var(--healthiffy-apple);
+  --color-harvest-lime: var(--healthiffy-flax);
+  --color-accent-orange: var(--healthiffy-golden);
+  --color-accent-terracotta: var(--healthiffy-golden);
+  --color-accent-yellow: var(--healthiffy-flax);
+  --color-border-subtle: rgba(53, 25, 3, 0.12);
+  --color-border-pill: rgba(53, 25, 3, 0.16);
+  --color-shadow-ambient: rgba(53, 25, 3, 0.16);
+}
+
 body {
   margin: 0;
   min-height: 100vh;
-  background: #f8fafc;
-  color: #111827;
+  background: var(--color-canvas);
+  color: var(--color-ink-primary);
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-heading {
+  font-family: 'Manrope', sans-serif;
+}
+
+.authenticated-header {
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 18% -80%, rgba(186, 196, 174, 0.2), transparent 28rem),
+    radial-gradient(circle at 82% 160%, rgba(52, 94, 69, 0.3), transparent 25rem),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.025), rgba(4, 20, 14, 0.13)),
+    var(--healthiffy-forest);
+  box-shadow: 0 10px 28px rgba(4, 20, 14, 0.3), inset 0 -1px 0 rgba(247, 243, 233, 0.05);
+}
+
+.authenticated-header::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  content: '';
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 150 150' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='headerNoise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23headerNoise)'/%3E%3C/svg%3E");
+}
+
+.authenticated-header__inner { position: relative; z-index: 1; }
+
+html {
+  scroll-behavior: smooth;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-accent-orange);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: var(--color-harvest-green);
+  color: var(--healthiffy-flax);
+}
+
+.skip-link {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 200;
+  padding: 12px 18px;
+  border-radius: 999px;
+  background: var(--color-ink-primary);
+  color: var(--healthiffy-flax);
+  font-weight: 700;
+  text-decoration: none;
+  transform: translateY(-160%);
+  transition: transform 160ms ease;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+.customer-mobile-page,
+.worker-mobile-shell,
+.admin-shell main,
+.account-settings-page,
+.auth-mobile-shell {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(141, 164, 50, 0.2), transparent 30rem),
+    var(--color-canvas);
+  color: var(--color-ink-primary);
+}
+
+.customer-mobile-page h1,
+.worker-mobile-shell h1,
+.admin-shell main h1,
+.account-settings-page h1,
+.auth-mobile-shell h1 {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+
+.customer-mobile-page h2,
+.worker-mobile-shell h2,
+.admin-shell main h2,
+.account-settings-page h2 {
+  font-family: 'Manrope', sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.customer-mobile-page input,
+.customer-mobile-page select,
+.customer-mobile-page textarea,
+.worker-mobile-shell input,
+.worker-mobile-shell select,
+.worker-mobile-shell textarea,
+.admin-shell main input,
+.admin-shell main select,
+.admin-shell main textarea,
+.account-settings-page input,
+.auth-mobile-shell input {
+  min-height: 46px;
+  border-color: var(--color-border-pill);
+  background-color: var(--color-surface-card);
+  color: var(--color-ink-primary);
+}
+
+.customer-mobile-page input:focus,
+.customer-mobile-page select:focus,
+.customer-mobile-page textarea:focus,
+.worker-mobile-shell input:focus,
+.worker-mobile-shell select:focus,
+.worker-mobile-shell textarea:focus,
+.admin-shell main input:focus,
+.admin-shell main select:focus,
+.admin-shell main textarea:focus,
+.account-settings-page input:focus,
+.auth-mobile-shell input:focus {
+  border-color: var(--healthiffy-apple);
+  box-shadow: 0 0 0 3px rgba(141, 164, 50, 0.18);
+  outline: none;
+}
+
+.customer-mobile-page article,
+.worker-mobile-shell article,
+.admin-shell main section,
+.account-settings-page section,
+.auth-mobile-shell > section {
+  border-color: var(--color-border-subtle);
+}
+
+.admin-shell table th {
+  color: var(--color-ink-soft);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.admin-shell table tbody tr {
+  transition: background-color 160ms ease;
+}
+
+.admin-shell table tbody tr:hover {
+  background: rgba(141, 164, 50, 0.12);
+}
+
+.customer-mobile-page article,
+.customer-mobile-page aside,
+.worker-mobile-shell article,
+.worker-mobile-shell section,
+.admin-shell main section,
+.account-settings-page section {
+  border-radius: 1.25rem;
+}
+
+.customer-mobile-page button,
+.customer-mobile-page a,
+.worker-mobile-shell button,
+.worker-mobile-shell a,
+.admin-shell main button,
+.admin-shell main a,
+.account-settings-page button,
+.account-settings-page a {
+  touch-action: manipulation;
+}
+
+@media (max-width: 639px) {
+  .Toastify__toast-container {
+    width: calc(100% - 24px);
+    right: 12px;
+    left: 12px;
+  }
+
+  .Toastify__toast {
+    margin-top: 10px;
+    border-radius: 16px;
+  }
+}
+
+@keyframes harvestFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-16px) rotate(4deg); }
+}
+
+@keyframes harvestDrift {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(12px, -22px) rotate(-5deg); }
+}
+
+@keyframes harvestBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(6px); }
+}
+
+.harvest-float {
+  animation: harvestFloat 8s ease-in-out infinite;
+}
+
+.harvest-drift {
+  animation: harvestDrift 11s ease-in-out infinite;
+}
+
+.harvest-bob {
+  animation: harvestBob 2.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .harvest-float,
+  .harvest-drift,
+  .harvest-bob {
+    animation: none !important;
+  }
 }

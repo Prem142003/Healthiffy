@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /checkout
+Disallow: /my-orders
+Disallow: /my-subscription
+Disallow: /orders/
+Disallow: /payment/
+Disallow: /worker
+Disallow: /change-password
+Disallow: /login
+Disallow: /staff-login
+Disallow: /unauthorized

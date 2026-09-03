@@ -47,7 +47,7 @@ export const MenuItemSheet = ({ item, onClose, onAdd }) => {
           </div>
           <p className="menu-item-sheet__description">{item.description}</p>
           <div className="menu-item-sheet__meta">
-            <span>{item.foodType === 'NON_VEG' ? 'Non vegetarian' : 'Vegetarian'}</span>
+            <span>Pure vegetarian</span>
             <span>{item.preparationTime} min</span>
           </div>
           <div className="menu-item-sheet__action-row">

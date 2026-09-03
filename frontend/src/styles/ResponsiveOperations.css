@@ -1,4 +1,4 @@
-@media (max-width: 639px) {
+@media (max-width: 767px) {
   .customer-mobile-page,
   .worker-mobile-shell,
   .admin-shell main {
@@ -86,14 +86,14 @@
   .worker-mobile-header {
     margin-bottom: 18px;
     padding: 18px;
-    border: 1px solid #153f2a;
-    border-radius: 8px;
-    background: #dce77e;
-    color: #153f2a;
+    border: 1px solid #351903;
+    border-radius: 20px;
+    background: #8da432;
+    color: #351903;
   }
 
   .worker-mobile-header p:first-child {
-    color: #2e7d4f;
+    color: #365004;
   }
 
   .worker-view-tabs {
@@ -133,9 +133,9 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    border-bottom: 1px solid rgba(21, 63, 42, 0.18);
-    background: rgba(255, 253, 248, 0.97);
-    color: #153f2a;
+    border-bottom: 1px solid rgba(53, 25, 3, 0.18);
+    background: rgba(237, 227, 131, 0.97);
+    color: #351903;
     backdrop-filter: blur(14px);
   }
 
@@ -150,7 +150,7 @@
 
   .admin-mobile-header span {
     margin-top: 2px;
-    color: #607066;
+    color: #74603d;
     font-size: 11px;
   }
 
@@ -159,7 +159,7 @@
     padding: 0 12px;
     display: inline-flex;
     align-items: center;
-    border: 1px solid rgba(21, 63, 42, 0.24);
+    border: 1px solid rgba(53, 25, 3, 0.24);
     border-radius: 999px;
     font-size: 12px;
     font-weight: 600;
@@ -207,10 +207,10 @@
     padding: 14px;
     display: grid;
     gap: 0;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    background: #fff;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+    border: 1px solid rgba(53, 25, 3, 0.12);
+    border-radius: 16px;
+    background: #f7f0b1;
+    box-shadow: 0 6px 18px rgba(53, 25, 3, 0.07);
   }
 
   .admin-shell table tbody td {
@@ -221,7 +221,7 @@
     align-items: start;
     gap: 10px;
     overflow-wrap: anywhere;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid rgba(53, 25, 3, 0.09);
   }
 
   .admin-shell table tbody td:last-child {
@@ -229,7 +229,7 @@
   }
 
   .admin-shell table tbody td::before {
-    color: #64748b;
+    color: #74603d;
     content: attr(data-label);
     font-size: 11px;
     font-weight: 600;

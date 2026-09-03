@@ -7,29 +7,23 @@ const getGreeting = () => {
   return "Good evening";
 };
 
-const WelcomeSection = ({ name, branchName }) => {
+const WelcomeSection = ({ name, branchName, cartCount = 0 }) => {
   const firstName = name?.trim()?.split(/\s+/)[0] || "there";
 
   return (
-    <section className="dashboard-welcome" aria-labelledby="welcome-title">
-      <div>
+    <section className="dashboard-welcome dashboard-welcome--compact" aria-labelledby="welcome-title">
+      <div className="dashboard-welcome__copy-block">
         <p className="dashboard-eyebrow">{getGreeting()}</p>
-        <h1 id="welcome-title">Welcome back, {firstName}.</h1>
-        <p className="dashboard-welcome__copy">
-          Fresh food, straightforward ordering, and everything you need in one place.
-        </p>
-        <div className="dashboard-welcome__actions">
-          <a className="dashboard-button dashboard-button--dark" href="#menu">Browse menu</a>
-          <Link className="dashboard-button dashboard-button--light" to="/monthly-plans">
-            View monthly plans
-          </Link>
-        </div>
+        <h1 id="welcome-title">Welcome back, <em>{firstName}.</em></h1>
       </div>
-      <div className="dashboard-welcome__branch">
-        <span>Ordering from</span>
-        <strong>{branchName || "Choose a branch below"}</strong>
-        <p>Your branch controls menu availability and order fulfilment.</p>
-      </div>
+      <nav className="dashboard-welcome__actions" aria-label="Customer shortcuts">
+        <Link className="dashboard-button dashboard-button--dark" to="/my-orders">Orders</Link>
+        <Link className="dashboard-button dashboard-button--dark" to="/monthly-plans">Monthly plan</Link>
+        <Link className="dashboard-button dashboard-button--light" to="/checkout">Cart{cartCount ? ` · ${cartCount}` : ''}</Link>
+      </nav>
+      <p className="dashboard-welcome__branch">
+        <span>Ordering from</span><strong>{branchName || 'Choose a branch in the header'}</strong>
+      </p>
     </section>
   );
 };

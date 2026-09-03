@@ -5,6 +5,7 @@ import { fetchPaymentSettings, submitManualPayment } from '../../redux/slices/pa
 import { ImageUploader } from '../../components/common/ImageUploader';
 import { initializeCashfree } from '../../services/cashfree';
 import { paymentApi } from '../../services/paymentApi';
+import './CustomerDashboard.css';
 
 const getApiError = (error) =>
   error.response?.data?.message || error.message || 'Unable to process payment.';
@@ -140,7 +141,7 @@ export const Payment = () => {
   const counterOnly = settings?.customerPaymentMode === 'PAY_AT_COUNTER';
 
   return (
-    <main className="customer-mobile-page min-h-screen bg-slate-50 px-4 py-8">
+    <main className="customer-app customer-mobile-page customer-payment-page min-h-screen px-4 py-8">
       <section className="mx-auto max-w-3xl space-y-6">
         <div className="mobile-page-heading flex items-center justify-between gap-4">
           <div>

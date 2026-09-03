@@ -14,7 +14,14 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
-      input: 'index.html'
+      input: 'index.html',
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'state-vendor': ['@reduxjs/toolkit', 'react-redux'],
+          'motion-vendor': ['gsap']
+        }
+      }
     }
   }
 });

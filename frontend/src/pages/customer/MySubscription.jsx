@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { subscriptionApi } from '../../services/subscriptionApi';
+import './CustomerDashboard.css';
 
 const formatDate = (value) =>
   value ? new Date(value).toLocaleDateString('en-IN', { dateStyle: 'medium' }) : '-';
@@ -34,7 +35,7 @@ export const MySubscription = () => {
   }, [load]);
 
   return (
-    <main className="customer-mobile-page min-h-screen bg-slate-50 px-4 py-8">
+    <main className="customer-app customer-mobile-page customer-subscription-page min-h-screen px-4 py-8">
       <section className="mx-auto max-w-5xl">
         <div className="mobile-page-heading mb-6 flex items-end justify-between gap-4">
           <div>
@@ -50,9 +51,9 @@ export const MySubscription = () => {
         ) : subscriptions.length === 0 ? (
           <p className="rounded-lg border border-slate-200 bg-white p-5 text-sm text-slate-600">You do not have a monthly subscription yet.</p>
         ) : (
-          <div className="space-y-5">
+          <div className="customer-subscription-list space-y-5">
             {subscriptions.map((subscription) => (
-              <article key={subscription._id} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+              <article key={subscription._id} className="customer-subscription-card rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
                   <div>
                     <h2 className="text-xl font-semibold text-slate-950">{subscription.planSnapshot.planName}</h2>
@@ -76,7 +77,7 @@ export const MySubscription = () => {
           </div>
         )}
 
-        <section className="mt-6 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+        <section className="customer-delivery-history mt-6 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
           <div className="border-b border-slate-200 px-5 py-4"><h2 className="text-lg font-semibold">Meal Delivery History</h2></div>
           {deliveries.length === 0 ? (
             <p className="p-5 text-sm text-slate-600">No meals have been delivered yet.</p>

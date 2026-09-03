@@ -5,7 +5,11 @@ const initialState = {
   branches: [],
   pagination: null,
   status: 'idle',
-  error: null
+  error: null,
+  customerBranches: [],
+  customerStatus: 'idle',
+  customerError: null,
+  selectedCustomerBranchId: ''
 };
 
 const extractData = (response) => response.data.data;
@@ -14,6 +18,14 @@ const extractError = (error) => error.response?.data?.message || 'Something went
 export const fetchAdminBranches = createAsyncThunk('branches/fetchAdmin', async (params, { rejectWithValue }) => {
   try {
     return extractData(await branchApi.getAdminBranches(params));
+  } catch (error) {
+    return rejectWithValue(extractError(error));
+  }
+});
+
+export const fetchPublicBranches = createAsyncThunk('branches/fetchPublic', async (_, { rejectWithValue }) => {
+  try {
+    return extractData(await branchApi.getPublicBranches({ limit: 100, sort: 'name' }));
   } catch (error) {
     return rejectWithValue(extractError(error));
   }
@@ -66,6 +78,11 @@ const branchSlice = createSlice({
   reducers: {
     clearBranchError: (state) => {
       state.error = null;
+    },
+    selectCustomerBranch: (state, action) => {
+      if (state.customerBranches.some((branch) => branch._id === action.payload)) {
+        state.selectedCustomerBranchId = action.payload;
+      }
     }
   },
   extraReducers: (builder) => {
@@ -83,6 +100,22 @@ const branchSlice = createSlice({
         state.status = 'failed';
         state.error = action.payload;
       })
+      .addCase(fetchPublicBranches.pending, (state) => {
+        state.customerStatus = 'loading';
+        state.customerError = null;
+      })
+      .addCase(fetchPublicBranches.fulfilled, (state, action) => {
+        const branches = action.payload.branches || [];
+        state.customerStatus = 'succeeded';
+        state.customerBranches = branches;
+        if (!branches.some((branch) => branch._id === state.selectedCustomerBranchId)) {
+          state.selectedCustomerBranchId = branches[0]?._id || '';
+        }
+      })
+      .addCase(fetchPublicBranches.rejected, (state, action) => {
+        state.customerStatus = 'failed';
+        state.customerError = action.payload;
+      })
       .addCase(createBranch.fulfilled, (state, action) => {
         upsertBranch(state.branches, action.payload.branch);
       })
@@ -96,7 +129,9 @@ const branchSlice = createSlice({
         upsertBranch(state.branches, action.payload.branch);
       })
       .addMatcher(
-        (action) => action.type.startsWith('branches/') && action.type.endsWith('/rejected'),
+        (action) => action.type.startsWith('branches/')
+          && action.type.endsWith('/rejected')
+          && action.type !== fetchPublicBranches.rejected.type,
         (state, action) => {
           state.status = 'failed';
           state.error = action.payload;
@@ -105,5 +140,5 @@ const branchSlice = createSlice({
   }
 });
 
-export const { clearBranchError } = branchSlice.actions;
+export const { clearBranchError, selectCustomerBranch } = branchSlice.actions;
 export default branchSlice.reducer;
