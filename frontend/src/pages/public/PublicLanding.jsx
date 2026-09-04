@@ -2,17 +2,15 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ArrowRight,
-  CalendarDays,
   ChefHat,
   Clock3,
-  CreditCard,
   Leaf,
   Mail,
   MapPin,
+  Phone,
   ShieldCheck,
   SlidersHorizontal,
-  Star,
-  UtensilsCrossed
+  Star
 } from 'lucide-react';
 import avocadoImage from '../../assets/images/avocado_slices_1788424146185.jpg';
 import cucumberImage from '../../assets/images/cucumber_radish_1788424260138.jpg';
@@ -183,7 +181,7 @@ export const PublicLanding = () => {
   };
 
   const goToLogin = () => navigate('/login');
-  const scrollToMenu = () => document.getElementById('harvest-menu')?.scrollIntoView({ behavior: 'smooth' });
+  const scrollToMenu = () => document.getElementById('full-menu')?.scrollIntoView({ behavior: 'smooth' });
 
   return (
     <main className="premium-landing">
@@ -352,7 +350,7 @@ export const PublicLanding = () => {
           <div><h3>Menu</h3><a href="#harvest-menu">Bestsellers</a><a href="#full-menu">Full menu</a><a href="#harvest-subscriptions">Monthly plans</a></div>
           <div><h3>Explore</h3><a href="#ingredients">Ingredients</a><a href="#location">Locations</a><a href="#top">Our story</a></div>
           <div><h3>Account</h3><Link to="/login">Customer sign in</Link><Link to="/staff-login">Staff sign in</Link></div>
-          <div><h3>Ordering</h3><span><CreditCard aria-hidden="true" /> Secure payments</span><span><UtensilsCrossed aria-hidden="true" /> Pure vegetarian</span><span><CalendarDays aria-hidden="true" /> Monthly plans</span></div>
+          <div><h3>Legal &amp; contact</h3><span>Legal name: OMKAR RAJENDRA JAGDALE</span><a href="mailto:healthiffy1@gmail.com"><Mail aria-hidden="true" /> healthiffy1@gmail.com</a><a href="tel:+918263045675"><Phone aria-hidden="true" /> +91 82630 45675</a></div>
         </div>
         <div className="landing-container landing-footer__bottom"><p>© {new Date().getFullYear()} Healthiffy. All rights reserved.</p><p>Eat well. Feel bright.</p></div>
       </footer>

@@ -11,3 +11,5 @@ Disallow: /change-password
 Disallow: /login
 Disallow: /staff-login
 Disallow: /unauthorized
+
+Sitemap: https://healthiffy-frontend-blond.vercel.app/sitemap.xml

@@ -17,7 +17,7 @@ interface LandingNavbarProps {
 }
 
 const navItems = [
-  ['Menu', 'harvest-menu'],
+  ['Menu', 'full-menu'],
   ['Bowls', 'harvest-menu'],
   ['Ingredients', 'ingredients'],
   ['Locations', 'location'],

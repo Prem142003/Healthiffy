@@ -64,14 +64,18 @@ export const RouteMetadata = () => {
       ? 'Browse live pure vegetarian menus and monthly meal plans from your selected Healthiffy cafe branch before signing in.'
       : `${pageName} in the secure Healthiffy cafe ordering platform.`;
 
-    document.title = pageName === 'Healthiffy' ? pageName : `${pageName} | Healthiffy`;
+    document.title = isPublicLanding || pageName === 'Healthiffy' ? 'Healthiffy' : `${pageName} | Healthiffy`;
     setMeta('description', description);
     setMeta('robots', isPublicLanding ? 'index, follow' : 'noindex, nofollow');
     setPropertyMeta('og:title', document.title);
     setPropertyMeta('og:description', description);
     setPropertyMeta('og:type', 'website');
     setPropertyMeta('og:url', `${window.location.origin}${location.pathname}`);
+    setPropertyMeta('og:site_name', 'Healthiffy');
+    setPropertyMeta('og:locale', 'en_IN');
     setMeta('twitter:card', 'summary');
+    setMeta('twitter:title', document.title);
+    setMeta('twitter:description', description);
 
     let canonical = document.head.querySelector('link[rel="canonical"]');
     if (!canonical) {

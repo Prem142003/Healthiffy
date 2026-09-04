@@ -402,7 +402,7 @@
 .landing-footer__brand p { max-width: 25rem; margin: 0.8rem 0 0; color: var(--text-on-dark-muted); font-size: 0.8rem; line-height: 1.7; }
 .landing-footer__grid > div:not(:first-child) { display: flex; flex-direction: column; align-items: flex-start; gap: 0.75rem; }
 .landing-footer__grid h3 { margin: 0 0 0.5rem; color: var(--sage-300); font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; }
-.landing-footer__grid a, .landing-footer__grid > div > span { min-height: 28px; display: flex; align-items: center; gap: 0.4rem; color: var(--text-on-dark-muted); font-size: 0.78rem; text-decoration: none; }
+.landing-footer__grid a, .landing-footer__grid > div > span { min-height: 28px; display: flex; align-items: center; gap: 0.4rem; color: var(--text-on-dark-muted); font-size: 0.78rem; line-height: 1.45; text-decoration: none; }
 .landing-footer__grid a:hover { color: var(--cream-50); }
 .landing-footer__grid svg { width: 14px; }
 .landing-footer__bottom { margin-top: 3.5rem; padding-top: 1.5rem; display: flex; justify-content: space-between; gap: 1rem; border-top: 1px solid var(--border-on-dark); color: rgba(237, 227, 131, 0.75); font-size: 0.68rem; }
